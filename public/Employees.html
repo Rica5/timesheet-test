@@ -159,10 +159,11 @@
 							<h2 class="panel-title text-center">Timesheets of employees</h2>
 							<hr>
 							<div class="row">
-								<div class="col-sm-12">	
-								<a href="/newemployee"><button class="btn btn-success btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>
-								<button id="pnew" onclick="newproject_listen()" class="btn btn-primary btn-sm pull-left"><i class="fa fa-plus"></i> NEW PROJECTS</button>
-							</div>	
+								<div class="col-sm-6">	
+								<a href="/newemployee"><button class="btn btn-success btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<button id="pnew" onclick="newproject_listen()" class="btn btn-primary btn-sm "><i class="fa fa-plus"></i> NEW PROJECTS</button>
+							</div>
+							
 							<div id="notif" class="col-sm-6 notification">
 								
 							</div>
@@ -195,7 +196,7 @@
 								</div>
 								</div>
 								<div class="col-md-3 pull-right">
-									<div class="form-group mb-lg">
+									<div class="input-group input-group-icon">
 										<label>Project</label>
 										<select id="project" name="project" class="form-control" required>
 											<option value="">Choose a Project</option>
@@ -207,13 +208,15 @@
 								</div>
 								<div class="col-md-3 pull-right">
 									<label>M-CODE</label>
-								<div class="form-group mb-lg">
+								<div class="input-group input-group-icon">
 									<input name="mcode" id="mcode" type="text" class="form-control" required/>
 								</div>
 								</div>
+								
 								<div class="col-md-3 pull-right">
-								<div class="form-group mb-lg">
-									<button id="filter" onclick="filtrate()" class="btn btn-warning btn-block"><b>FILTER DATA</b><img src="assets/images/loading-filter.gif" style="width: 40px;height:auto;display:none;" id="filter_load"></button>
+									<br>
+								<div class="input-group input-group-icon">
+									<button id="filter" onclick="filtrate()" class="btn btn-warning btn-block pull-right text-center"><b>FILTER DATA</b><img src="assets/images/loading-filter.gif" style="width: 40px;height:auto;display:none;" id="filter_load"></button>
 								</div>
 								
 								</div>
