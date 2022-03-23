@@ -194,7 +194,7 @@ routeExp.route("/employees").get(async function (req, res) {
         );
         datatowrite = timesheets;
         var projects = await projectSchema.find({ status: "In Progress" });
-        res.render("employees.html", {
+        res.render("Employees.html", {
           timesheets: timesheets,
           available_project: projects,
         });
