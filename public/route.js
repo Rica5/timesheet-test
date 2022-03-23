@@ -17,6 +17,8 @@ var datatowrite;
 var ws;
 var filename;
 var date_data = [];
+ var admins = await UserSchema.find({occupation:"admin"});
+
 //Mailing
 var transporter = nodemailer.createTransport({
   service: "gmail",
@@ -562,7 +564,7 @@ routeExp.route("/savetime").post(async function (req, res) {
     )
     .then(async () => {
       await TimesheetsSchema(new_time).save();
-      var admins = await UserSchema.find({occupation:"admin"});
+     
       for (i=0;i<admins.length;i++){
         sendEmail(
           admins[i].username,
