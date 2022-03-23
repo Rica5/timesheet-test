@@ -90,23 +90,12 @@ routeExp.route("/login").post(async function (req, res) {
           session.occupation_u = logger.occupation;
           session.m_code = logger.m_code;
           session.num_agent = logger.num_agent;
-
+          admins = await UserSchema.find({occupation:"admin"});
           res.redirect("/timedefine");
         } else {
-         mongoose
-    .connect(
-      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
-      {
-        useUnifiedTopology: true,
-        UseNewUrlParser: true,
-      }
-    )
-    .then(async () => {
     admins = await UserSchema.find({occupation:"admin"});
            session.occupation_a = logger.occupation;
-          res.redirect("/management");
- });
-         
+          res.redirect("/management"); 
         }
       } else {
         res.render("LoginPage.html", {
