@@ -17,7 +17,7 @@ var datatowrite;
 var ws;
 var filename;
 var date_data = [];
- var admins = await UserSchema.find({occupation:"admin"});
+ var admins;
 
 //Mailing
 var transporter = nodemailer.createTransport({
@@ -43,9 +43,21 @@ function sendEmail(receiver, subject, text) {
     }
   });
 }
+ mongoose
+    .connect(
+      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+      {
+        useUnifiedTopology: true,
+        UseNewUrlParser: true,
+      }
+    )
+    .then(async () => {
+    admins = await UserSchema.find({occupation:"admin"});
+ });
 
 //Page login
 routeExp.route("/").get(async function (req, res) {
+ 
   session = req.session;
   if (session.occupation_u == "user") {
     res.redirect("/timedefine");
@@ -81,8 +93,20 @@ routeExp.route("/login").post(async function (req, res) {
 
           res.redirect("/timedefine");
         } else {
-          session.occupation_a = logger.occupation;
+         mongoose
+    .connect(
+      "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+      {
+        useUnifiedTopology: true,
+        UseNewUrlParser: true,
+      }
+    )
+    .then(async () => {
+    admins = await UserSchema.find({occupation:"admin"});
+           session.occupation_a = logger.occupation;
           res.redirect("/management");
+ });
+         
         }
       } else {
         res.render("LoginPage.html", {
