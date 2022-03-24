@@ -4,4 +4,4 @@ const Project = mongoose.Schema({
     project_name:String,
     status:String
 })
-module.exports = mongoose.model('ProjectTest',Project);
+module.exports = mongoose.model('Project',Project);
