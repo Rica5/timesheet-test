@@ -239,7 +239,17 @@
 									</tr>
 								</thead>
 								<tbody id ="alldata">
-									
+									<% timesheets.forEach(function(timesheets) { %>
+										<tr id="<%= timesheets._id %>">
+											<td><%= timesheets.m_code %></td>
+											<td><%= timesheets.num_agent %></td>
+											<td><%= timesheets.projects %></td>
+											<td><%= timesheets.date %></td>
+											<td><%= timesheets.time_start %></td>
+											<td><%= timesheets.time_end %></td>
+											<td><%= timesheets.task %></td>
+										</tr>		   
+								  <% }); %>
 								</tbody>
 							</table>
 						</div>
@@ -280,13 +290,12 @@
 			</div>
 		</section>
 		<script>
-			var initData = JSON.parse('<%-JSON.stringify(timesheets)%>');
+			var initData;
 			var load = document.getElementById("filter_load");
 			var gen = document.getElementById("generate_excel");
 			var download = document.getElementById("download");
 			var table = document.getElementById("datatable-default");
-			show_data(initData);
-			check_button(initData.length);
+			check_button('<%= timesheets.length %>');
 			var parentelement = document.getElementById("alldata");
 			function show_data(Data){
 				parentelement = document.getElementById("alldata");
