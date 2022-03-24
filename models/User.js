@@ -7,4 +7,4 @@ const User = mongoose.Schema({
    num_agent:String,
    occupation:String
 })
-module.exports = mongoose.model('datauserTest',User);
+module.exports = mongoose.model('datauser',User);
