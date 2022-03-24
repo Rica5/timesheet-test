@@ -259,7 +259,9 @@ routeExp.route("/filter").post(async function (req, res) {
           datestart = addday;
         }
         for (i = 1; i < datatosend.length; i++) {
-          datatosend[0].push(datatosend[i][0]);
+         for (d=0;d<datatosend[i].length;d++){
+            datatosend[0].push(datatosend[i][d]);
+          }
         }
         datatowrite = datatosend[0];
         res.send(datatosend[0]);
