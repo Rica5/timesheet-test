@@ -32,10 +32,10 @@ function sendRequest_info(url,project) {
         load.style.display = "none";
         show.style.display = "block";
         var data = this.responseText.split(",");
-        all_time.innerHTML = data[0];
-        all_amount.innerHTML = data[1];
-        month_time.innerHTML = data[2];
-        month_amount.innerHTML = data[3];
+          all_time.innerHTML = data[0];
+          all_amount.innerHTML = data[1];
+          month_time.innerHTML = data[2];
+          month_amount.innerHTML = data[3];
       }
     };
     http.send("project="+project);
