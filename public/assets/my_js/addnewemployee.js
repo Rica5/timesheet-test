@@ -8,10 +8,12 @@ btns.disabled = true;
 var mail_done = false;
 var code_done = false;
 var number_done =false;
+var amount_done = false
 //error 
 var em = document.getElementById("em");
 var ec = document.getElementById("ec");
 var en = document.getElementById("en");
+var am = document.getElementById("am");
 //Verify mail
 function verify_mail(){
   var email = document.getElementById("email");
@@ -24,6 +26,20 @@ function verify_mail(){
     em.style.display = "block";
     email.setAttribute("style","border-color:red;");
     mail_done = false;
+  }
+  verify_all();
+}
+function verify_amount(){
+  var amount = document.getElementById("amount");
+  if (amount.value ==""){
+    amount_done = false;
+    am.style.display = "block";
+    amount.setAttribute("style","border-color:red;");
+  }
+  else{
+    am.style.display = "none";
+    amount.removeAttribute("style");
+    amount_done = true;
   }
   verify_all();
 }
@@ -58,22 +74,33 @@ function verify_number(){
   verify_all();
 }
 function verify_all(){
-  if (mail_done && code_done && number_done){
+  if (mail_done && code_done && number_done && amount_done){
       btns.disabled = false;
   }
   else{
     btns.disabled = true;
   }
 }
+var filter;
+var search;
+setTimeout(()=>{
+			filter = document.querySelector("input[type='search']");	
+      filter.AddEventListener("keyup",function(){
+          search = filter.value;
+          console.log(search);
+      })
+},1000)
+
 
 
 function add_new_employee(){
     var email = document.getElementById("email").value;
     var m_code = document.getElementById("mcode").value;
     var num_agent = document.getElementById("num_agent").value;
-    sendRequest('/addemp',email,m_code,num_agent);
+    var amount = document.getElementById("amount").value;
+    sendRequest('/addemp',email,m_code,num_agent,amount);
 }
-function sendRequest(url, email,m_code,num_agent) {
+function sendRequest(url, email,m_code,num_agent,amount) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -97,5 +124,5 @@ function sendRequest(url, email,m_code,num_agent) {
           document.getElementById("num_agent").value="";
       }
     };
-    http.send("email=" + email + "&mcode=" + m_code + "&num_agent=" + num_agent);
+    http.send("email=" + email + "&mcode=" + m_code + "&num_agent=" + num_agent +"&amount=" + amount);
   }
