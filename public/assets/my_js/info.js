@@ -29,6 +29,10 @@ function sendRequest_info(url,project) {
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
+          if (this.responseText == "retour"){
+		      window.location = "/";
+	      }
+          else{
         load.style.display = "none";
         show.style.display = "block";
         var data = this.responseText.split(",");
@@ -36,6 +40,7 @@ function sendRequest_info(url,project) {
           all_amount.innerHTML = data[1];
           month_time.innerHTML = data[2];
           month_amount.innerHTML = data[3];
+          }
       }
     };
     http.send("project="+project);
