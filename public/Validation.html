@@ -190,7 +190,7 @@
 														<button type="button" class="btn btn-success btn-circle btn-sm" onclick="validate_true('<%= timesheets._id %>')"><i class="fa fa-check"></i></button>
 													</div>
 													<div class="col-sm-5 text-right">
-														<a class="modal-with-form" href="#modalForm"><button type="button" class="btn btn-danger btn-circle btn-sm text-right" onclick="validate_false('<%= timesheets._id %>','<%= timesheets.m_code %>','<%= timesheets.task %>','<%= timesheets.projects %>')"><i class="fa fa-ban"></i></button></a>
+														<a class="modal-with-form" href="#modalForm"><button type="button" class="btn btn-danger btn-circle btn-sm text-right" onclick='validate_false("<%= timesheets._id %>","<%= timesheets.m_code %>","<%= timesheets.task %>","<%= timesheets.projects %>")'><i class="fa fa-ban"></i></button></a>
 													</div>
 												</div>
 													
