@@ -302,6 +302,7 @@ routeExp.route("/addemp").post(async function (req, res) {
   var email = req.body.email;
   var mcode = req.body.mcode;
   var num_agent = req.body.num_agent;
+  var amount = req.body.amount;
   mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -329,6 +330,7 @@ routeExp.route("/addemp").post(async function (req, res) {
           m_code: mcode,
           num_agent: num_agent,
           occupation: "user",
+          amount:amount,
         };
         await UserSchema(new_emp).save();
         sendEmail(
@@ -349,10 +351,10 @@ routeExp.route("/addproject").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
   var project = req.body.projet;
-  var status = req.body.status;
+  var parent = req.body.parent;
   var new_project = {
     project_name: project,
-    status: status,
+    parent: parent,
   };
   mongoose
     .connect(
@@ -515,6 +517,8 @@ routeExp.route("/getinfo").post(async function (req, res) {
       }
     )
     .then(async () => {
+    var sub = await projectSchema.find({parent:project});
+    if (sub.length == 0){
       var alltimes = await TimesheetsSchema.find({
         projects: project,
         validation: true,
@@ -543,6 +547,52 @@ routeExp.route("/getinfo").post(async function (req, res) {
       minutes = 0;
       var send = project_info(alltimes) + "," + timepassed + "," + amount;
       res.send(send);
+    }
+     else{
+        var send ="";
+        var timepassedh = 0;var timepassedmin=0; var timepassed1h=0;var timepassed1min=0; var amounts=0;var amount1=0;
+        for (p=0;p<sub.length;p++){
+          var project_name = sub[p].project_name;
+          console.log(project_name);
+          var alltimes = await TimesheetsSchema.find({
+            projects: project_name,
+            validation: true,
+          });
+          var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
+          const endOfMonth = moment().daysInMonth();
+          var actually = 1;
+          const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+          var datetosearch = startOfMonth;
+          while (actually <= endOfMonth) {
+            var one = await TimesheetsSchema.find({
+              projects:project_name,
+              date: datetosearch,
+              validation: true,
+            });
+            for (i = 0; i < one.length; i++) {
+              calcul_timediff(one[i].time_start, one[i].time_end);
+            }
+            actually++;
+            datetosearch = moment(datetosearch, "YYYY-MM-DD")
+              .add(1, "days")
+              .format("YYYY-MM-DD");
+          }
+          timepassed1h += hours;
+          timepassed1min += minutes;
+          
+          amount1 += parseFloat(calcul_euro(am.amount, hours, minutes));
+          console.log(amount1);
+          hours = 0;
+          minutes = 0;
+          var cum2 = project_info(alltimes,am.amount).split(',');
+          timepassedh += parseInt(cum2[0].split(',')[0].split(' ')[0]);
+          timepassedmin += parseInt(cum2[0].split(',')[0].split(' ')[3]);
+          amounts += parseFloat(cum2[1].split(' ')[0]);
+        }
+        send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
+        console.log(send);
+        res.send(send);
+      }
     });
   }
   else{
@@ -632,6 +682,7 @@ routeExp.route("/generate").post(async function (req, res) {
     )
     .then(async () => {
       if (request.m_code) {
+         var us = await UserSchema.findOne({m_code:request.m_code});
         data.push([
           "MCODE",
           "Number of Agent",
@@ -641,7 +692,7 @@ routeExp.route("/generate").post(async function (req, res) {
           "Start Time",
           "End Time",
         ]);
-        generate_excel(datatowrite);
+        generate_excel(datatowrite,us.amount);
         if (newsheet.SheetNames.includes(request.m_code)) {
         } else {
           newsheet.SheetNames.push(request.m_code);
@@ -678,11 +729,11 @@ routeExp.route("/generate").post(async function (req, res) {
                 datanew.push(datatowrite[i]);
               }
             }
-            generate_excel(datanew);
+            generate_excel(datanew,all_employes[e].amount);
             datanew = [];
           } else {
             datatowrite = await TimesheetsSchema.find(request);
-            generate_excel(datatowrite);
+            generate_excel(datatowrite,all_employes[e].amount);
           }
 
           if (newsheet.SheetNames.includes(all_employes[e].m_code)) {
@@ -735,7 +786,7 @@ routeExp.route("/exit_u").get(function (req, res) {
 
 //Fonction a employer
 //Fonction generate excel
-function generate_excel(datatowrites) {
+function generate_excel(datatowrites,rate) {
   for (i = 0; i < datatowrites.length; i++) {
     var ligne = [
       datatowrites[i].m_code,
@@ -758,7 +809,7 @@ function generate_excel(datatowrites) {
     "",
     "",
     "AMOUNT",
-    calcul_euro(6.5, hours, minutes).toFixed(2) + " €",
+    calcul_euro(rate, hours, minutes).toFixed(2) + " €",
   ]);
   ws = ExcelFile.utils.aoa_to_sheet(data);
   var cellule = ["A", "B", "C", "D", "E", "F", "G"];
@@ -892,11 +943,11 @@ function htmlVerification(code) {
     "<h3></center>"
   );
 }
-function project_info(searchproject) {
+function project_info(searchproject,a) {
   for (i = 0; i < searchproject.length; i++) {
     calcul_timediff(searchproject[i].time_start, searchproject[i].time_end);
   }
-  var amount = calcul_euro(6.5, hours, minutes).toFixed(2) + " €";
+  var amount = calcul_euro(a, hours, minutes).toFixed(2) + " €";
   var timepassed = hours + " H : " + minutes + " MN";
   hours = 0;
   minutes = 0;
