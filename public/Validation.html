@@ -263,12 +263,32 @@
 			</section>
 		</div>
 		<script>
-			if ('<%= timesheets.length %>' <=1){
+			if ('<%= timesheets.length %>' <= 1){
 				document.getElementById("vall").disabled = true;
 			}
 			else{
 				document.getElementById("vall").disabled = false;
 			}
+			const queryString = window.location.search;
+			const urlParams = new URLSearchParams(queryString);
+			const search = urlParams.get('search');
+//istener filter
+
+			setTimeout(()=>{
+				filter = document.querySelector("input[type='search']");
+				var table = $('#datatable-default').DataTable();
+				if (search != null){
+					table.search( search ).draw();
+				}
+				
+			},1000)
+		
+
+		
+		
+
+			
+			
 		</script>
 		
 
@@ -304,6 +324,7 @@
 		<script src="assets/my_js/validation.js"></script>
 		<script src="assets/javascripts/ui-elements/examples.modals.js"></script>
 		<script>
+			
 			
 		</script>
 	</body>
