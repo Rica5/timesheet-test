@@ -1,7 +1,6 @@
 //Valide if true
 function validate_true(validate){
-    var ligne = document.getElementById(validate);
-    sendRequest_true('/validate',validate,ligne);
+    sendRequest_true('/validate',validate);
 }
 var reason = document.getElementById("reason");
 var rejected = document.getElementById("rejected");
@@ -16,7 +15,7 @@ function validate_false(denied,m_code,tasks,projetr){
     mcode = m_code;
     task = tasks;
     projetrej = projetr;
-    rejected.attributes("placeholder","Rejected reason for "+ tasks);
+    rejected.setAttribute("placeholder","Rejected reason for "+ tasks);
 }
 function sendclick(){
     sendRequest_false('/denied',denie,mcode,rejected.value,task,projetrej);
