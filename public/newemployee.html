@@ -56,15 +56,20 @@
 							</div>
 							<div class="form-group mb-none">
 								<div class="row">
-									<div class="col-sm-6 mb-lg">
+									<div class="col-sm-4 mb-lg">
 										<label>M-CODE</label>
 										<input  type="text" class="form-control input-lg" onkeyup="verify_code()" id="mcode" name="mcode" required />
 										<span id="ec" style="color:red;font-size: smaller;display:none;">M-CODE is required</span>
 									</div>
-									<div class="col-sm-6 mb-lg">
+									<div class="col-sm-4 mb-lg">
 										<label>Number of agent</label>
 										<input type="text" class="form-control input-lg" onkeyup="verify_number()" id="num_agent" name ='num_agent' required />
 										<span id="en" style="color:red;font-size: smaller;display:none;">Number is required</span>
+									</div>
+									<div class="col-sm-4 mb-lg">
+										<label>Amount</label>
+										<input type="number" onkeyup="verify_amount()"  class="form-control input-lg" onkeyup="" id="amount" name ='amount' required />
+										<span id="am" style="color:red;font-size: smaller;display:none;">Amount is required</span>
 									</div>
 								</div>
 							</div>
