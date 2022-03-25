@@ -45,7 +45,6 @@ function sendEmail(receiver, subject, text) {
 
 //Page login
 routeExp.route("/").get(async function (req, res) {
- 
   session = req.session;
   if (session.occupation_u == "user") {
     res.redirect("/timedefine");
@@ -219,6 +218,8 @@ var request = {
   occupation: "user",
 };
 routeExp.route("/filter").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var mcode = req.body.mcode;
   var project = req.body.project;
   var datestart = req.body.startdate;
@@ -290,9 +291,14 @@ routeExp.route("/filter").post(async function (req, res) {
         res.send(datatosend);
       }
     });
+  }else{
+    res.redirect("/");
+  }
 });
 //Add employee
 routeExp.route("/addemp").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var email = req.body.email;
   var mcode = req.body.mcode;
   var num_agent = req.body.num_agent;
@@ -333,9 +339,15 @@ routeExp.route("/addemp").post(async function (req, res) {
         res.send(email);
       }
     });
+  }
+  else{
+    res.redirect("/")
+  }
 });
 //add new project
 routeExp.route("/addproject").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var project = req.body.projet;
   var status = req.body.status;
   var new_project = {
@@ -358,6 +370,9 @@ routeExp.route("/addproject").post(async function (req, res) {
         res.send("Project " + project + " added successfuly");
       }
     });
+  }else{
+    res.redirect("/")
+  }
 });
 
 //Validation page
@@ -382,6 +397,8 @@ routeExp.route("/validation").get(async function (req, res) {
 });
 //Validation
 routeExp.route("/validate").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var id = req.body.id;
   mongoose
     .connect(
@@ -398,9 +415,15 @@ routeExp.route("/validate").post(async function (req, res) {
       );
       res.send("Ok");
     });
+  }
+  else{
+  res.redirect("/");
+  }
 });
 //Denied
 routeExp.route("/denied").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var id = req.body.id;
   var m_code = req.body.m_code;
   var message = req.body.message;
@@ -428,6 +451,10 @@ routeExp.route("/denied").post(async function (req, res) {
       sendEmail(user.username, "Rejected Time logged", text);
       res.send("Ok");
     });
+  }
+  else{
+    res.redirect("/")
+  }
 });
 //Validate all
 routeExp.route("/valideall").get(async function (req, res) {
@@ -476,6 +503,8 @@ routeExp.route("/about").get(async function (req, res) {
 
 //Project information
 routeExp.route("/getinfo").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var project = req.body.project;
   mongoose
     .connect(
@@ -515,6 +544,10 @@ routeExp.route("/getinfo").post(async function (req, res) {
       var send = project_info(alltimes) + "," + timepassed + "," + amount;
       res.send(send);
     });
+  }
+  else{
+    res.redirect("/");
+  }
 });
 
 //Define time page
@@ -540,6 +573,7 @@ routeExp.route("/timedefine").get(async function (req, res) {
 //Savetime user
 routeExp.route("/savetime").post(async function (req, res) {
   session = req.session;
+  if (session.occupation_u == "user") {
   var project = req.body.project;
   var date = moment(req.body.date).format("YYYY-MM-DD");
   var start_time = req.body.start;
@@ -572,10 +606,16 @@ routeExp.route("/savetime").post(async function (req, res) {
         );
       res.send("Time for task " + task + " saved");
     });
+  }
+  else{
+    res.redirect("/");
+  }
 });
 
 //Generate excel file
 routeExp.route("/generate").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   var newsheet = ExcelFile.utils.book_new();
   newsheet.Props = {
     Title: "Timesheets",
@@ -666,6 +706,9 @@ routeExp.route("/generate").post(async function (req, res) {
 
       res.send("Done");
     });
+  }else{
+    res.redirect("/");
+  }
 });
 
 
