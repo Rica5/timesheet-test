@@ -292,7 +292,7 @@ routeExp.route("/filter").post(async function (req, res) {
       }
     });
   }else{
-    res.redirect("/");
+    res.send("retour");
   }
 });
 //Add employee
@@ -343,7 +343,7 @@ routeExp.route("/addemp").post(async function (req, res) {
     });
   }
   else{
-    res.redirect("/")
+   res.send("retour");
   }
 });
 //add new project
@@ -455,7 +455,7 @@ routeExp.route("/denied").post(async function (req, res) {
     });
   }
   else{
-    res.redirect("/")
+    res.send("retour");
   }
 });
 //Validate all
@@ -596,7 +596,7 @@ routeExp.route("/getinfo").post(async function (req, res) {
     });
   }
   else{
-    res.redirect("/");
+    res.send("retour");
   }
 });
 
@@ -658,7 +658,7 @@ routeExp.route("/savetime").post(async function (req, res) {
     });
   }
   else{
-    res.redirect("/");
+   res.send("retour");
   }
 });
 
