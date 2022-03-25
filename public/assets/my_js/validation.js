@@ -16,9 +16,11 @@ function validate_false(denied,m_code,tasks,projetr){
     mcode = m_code;
     task = tasks;
     projetrej = projetr;
+    rejected.attributes("placeholder","Rejected reason for "+ tasks);
 }
 function sendclick(){
     sendRequest_false('/denied',denie,mcode,rejected.value,task,projetrej);
+    rejected.value="";
 }
 
 function sendRequest_true(url,id) {
