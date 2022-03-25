@@ -112,6 +112,9 @@ function sendRequest(url, email,m_code,num_agent,amount) {
               error.innerHTML = "Employee is already registered";
               btns.disabled = true;
           }
+	      else if (this.responseText == "retour"){
+		      window.location = "/";
+	      }
           else{
             success.style.display = "block";
             error.style.display = "none";
