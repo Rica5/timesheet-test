@@ -40,8 +40,7 @@ function sendRequest_true(url,id) {
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-        reason.style.display = "none";
-        document.getElementById(id).remove();
+             window.location = "/validation";
       }
     };
     http.send("id="+id+"&m_code="+mcode+"&task="+task+"&projetr="+projetr+"&message="+message);
