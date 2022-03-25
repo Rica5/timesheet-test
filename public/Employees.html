@@ -171,11 +171,35 @@
 							<div id="addproject" class="card" style="display: none;">
 								<div class="card-body">
 								  <h5 class="card-title">Create new project</h5>
-								  <h6 class="card-subtitle mb-2 text-muted">Project Name</h6>
+								  
 								  <div class="row">
-									  <div class="col-sm-6"><input onkeyup="project()" name="newproject" id="newproject" type="text" class="form-control input-lg" style="height: 35px;"/></div>
-									  <div class="col-sm-6"><button id="add_project" onclick="add_new_project()" class="btn btn-primary " ><i class="fa fa-plus"></i>  ADD</button>
-									  <button class="btn btn-danger " onclick="cancel()">CANCEL</button></div>
+									  <div class="col-sm-6">
+										<h6 class="card-subtitle mb-2 text-muted">Project Name</h6>
+										  <input onkeyup="project()" name="newproject" id="newproject" type="text" class="form-control input-lg" style="height: 35px;"/>
+										</div>
+									  <div id="par" class="col-sm-6" style="display: none;">
+										<h6 class="card-subtitle mb-2 text-muted">Parent Project</h6>
+										<select id="parent" onchange="select()" name="parent" class="form-control" required>
+											<option value="">Choose a Project</option>
+											<% available_project.forEach(function(project) { %>
+												<option value="<%= project.project_name %>"><%= project.project_name %></option>
+												<% }); %>
+										</select>
+										</div>
+								  </div>
+								  <br>
+								  <div class="row">
+									  <div class="col-sm-6">
+										<div class="form-check">
+											<input onclick="checking()" class="form-check-input" type="checkbox" value="" id="sub" />
+											<label class="form-check-label" for="flexCheckDefault">Sub-Project</label>
+										  </div>
+									  </div>
+									  <div class="col-sm-6">
+										<button id="add_project" onclick="add_new_project()" class="btn btn-primary " ><i class="fa fa-plus"></i>  ADD</button>
+										<button class="btn btn-danger " onclick="cancel()">CANCEL</button>
+									  </div>
+
 								  </div>
 								</div>
 							  </div>
@@ -290,13 +314,15 @@
 			</div>
 		</section>
 		<script>
+
 			var initData;
 			var load = document.getElementById("filter_load");
 			var gen = document.getElementById("generate_excel");
 			var download = document.getElementById("download");
 			var table = document.getElementById("datatable-default");
-			check_button('<%= timesheets.length %>');
 			var parentelement = document.getElementById("alldata");
+			console.log('<%= timesheets.length %>');
+			check_button('<%= timesheets.length %>');
 			function show_data(Data){
 				parentelement = document.getElementById("alldata");
 				for (i=0;i<Data.length;i++){
