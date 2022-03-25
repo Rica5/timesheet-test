@@ -5,6 +5,7 @@ const User = mongoose.Schema({
    password:String,
    m_code:String,
    num_agent:String,
-   occupation:String
+   occupation:String,
+   amount:Number
 })
 module.exports = mongoose.model('datauser',User);
