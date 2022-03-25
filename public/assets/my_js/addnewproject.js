@@ -7,7 +7,7 @@ function cancel(){
 }
 function add_new_project(){
     var project = document.getElementById("newproject").value;
-    var status = "In Progress";
+    var status = document.getElementById("parent").value;
     sendRequest('/addproject',project,status);
 
 }
@@ -21,7 +21,23 @@ function project(){
       btnadd.disabled = false;
     }
 }
-function sendRequest(url, projet,status) {
+function checking(){
+  if (document.getElementById("sub").checked == true){
+      document.getElementById("par").style.display = "block";
+  }
+  else{
+    document.getElementById("par").style.display = "none";
+  }
+}
+function select(){
+  if (document.getElementById("parent").value == ""){
+     btnadd.disabled = true;
+  }
+  else{
+    btnadd.disabled = false;
+  }
+}
+function sendRequest(url, projet,parent) {
   var http = new XMLHttpRequest();
   http.open("POST", url, true);
   http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -35,7 +51,7 @@ function sendRequest(url, projet,status) {
       showNotif(this.responseText);
     }
   };
-  http.send("projet=" + projet + "&status="+status);
+  http.send("projet=" + projet + "&parent="+parent);
 }
 function showNotif(text) {
   const notif = document.querySelector('.notification');
@@ -43,5 +59,6 @@ function showNotif(text) {
   notif.style.display = 'block';
   setTimeout(() => {
       notif.style.display = 'none';
-  }, 5000);
+      window.location = "/employees";
+  }, 3000);
 }
