@@ -10,4 +10,4 @@ const Timesheet = mongoose.Schema({
     task:String,
     validation:Boolean
 })
-module.exports = mongoose.model('TimesheetTest',Timesheet);
+module.exports = mongoose.model('Timesheet',Timesheet);
