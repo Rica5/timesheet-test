@@ -8,4 +8,4 @@ const User = mongoose.Schema({
    occupation:String,
    amount:Number
 })
-module.exports = mongoose.model('datauserTest',User);
+module.exports = mongoose.model('datauser',User);
