@@ -523,6 +523,7 @@ routeExp.route("/getinfo").post(async function (req, res) {
         projects: project,
         validation: true,
       });
+      var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
       const endOfMonth = moment().daysInMonth();
       var actually = 1;
       const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -542,10 +543,10 @@ routeExp.route("/getinfo").post(async function (req, res) {
           .format("YYYY-MM-DD");
       }
       var timepassed = hours + " H : " + minutes + " MN";
-      var amount = calcul_euro(6.5, hours, minutes).toFixed(2) + " €";
+      var amount = calcul_euro(am.amount, hours, minutes).toFixed(2) + " €";
       hours = 0;
       minutes = 0;
-      var send = project_info(alltimes) + "," + timepassed + "," + amount;
+      var send = project_info(alltimes,am.amount) + "," + timepassed + "," + amount;
       res.send(send);
     }
      else{
@@ -553,7 +554,6 @@ routeExp.route("/getinfo").post(async function (req, res) {
         var timepassedh = 0;var timepassedmin=0; var timepassed1h=0;var timepassed1min=0; var amounts=0;var amount1=0;
         for (p=0;p<sub.length;p++){
           var project_name = sub[p].project_name;
-          console.log(project_name);
           var alltimes = await TimesheetsSchema.find({
             projects: project_name,
             validation: true,
@@ -581,7 +581,6 @@ routeExp.route("/getinfo").post(async function (req, res) {
           timepassed1min += minutes;
           
           amount1 += parseFloat(calcul_euro(am.amount, hours, minutes));
-          console.log(amount1);
           hours = 0;
           minutes = 0;
           var cum2 = project_info(alltimes,am.amount).split(',');
@@ -589,8 +588,15 @@ routeExp.route("/getinfo").post(async function (req, res) {
           timepassedmin += parseInt(cum2[0].split(',')[0].split(' ')[3]);
           amounts += parseFloat(cum2[1].split(' ')[0]);
         }
+        while (timepassedmin > 60) {
+          timepassedh += 1;
+          timepassedmin = timepassedmin - 60;
+        }
+        while (timepassed1min > 60) {
+          timepassed1h += 1;
+          timepassed1min = timepassed1min - 60;
+        }
         send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
-        console.log(send);
         res.send(send);
       }
     });
@@ -613,7 +619,7 @@ routeExp.route("/timedefine").get(async function (req, res) {
         }
       )
       .then(async () => {
-        var projects = await projectSchema.find({ status: "In Progress" });
+        var projects = await projectSchema.find({ parent: { $ne: "" } });
         res.render("Timedefine.html", { available_project: projects });
       });
   } else {
