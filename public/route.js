@@ -193,7 +193,7 @@ routeExp.route("/employees").get(async function (req, res) {
           { $natural: -1 }
         );
         datatowrite = timesheets;
-        var projects = await projectSchema.find({ parent: { $ne: "" } });
+        var projects = await projectSchema.find({});
         res.render("Employees.html", {
           timesheets: timesheets,
           available_project: projects,
