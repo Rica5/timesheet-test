@@ -1,0 +1,76 @@
+.title1 {
+    padding-left: 60px;
+    padding-top: 210px;
+    font-size: 60px;
+    font-weight: bold;
+    color: aliceblue;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+.title2 {
+    padding-left: 180px;
+    font-size: 70px;
+    font-weight: bold;
+    color: #619FCB;
+    font-family: monospace;
+    }
+    .title3 {
+    padding-left: 60px;
+    font-size: 60px;
+    font-weight: bold;
+    color: aliceblue;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+     }
+     .notification {
+        transition: all ease 0.4s;
+        background: seagreen;
+        padding: 1px 5px;
+        margin: 2px 0;
+        border-radius: 5px;
+        box-shadow: 0 0 4px rgba(0, 0, 0, 0.4);
+        display: none;
+        animation: fadeOut 2s;
+        color: white;
+    }
+    @keyframes fadeOut {
+        0% {
+            opacity : 1
+        }
+        50% {
+            opacity : 1
+        }
+        100% {
+            opacity : 0
+        }
+    }
+    h1 {
+        color:green;
+    }
+    .xyz {
+        background-size: auto;
+        text-align: center;
+        padding-top: 100px;
+    }
+    .btn-circle.btn-sm {
+        width: 30px;
+        height: 30px;
+        padding: 6px 0px;
+        border-radius: 15px;
+        font-size: 8px;
+        text-align: center;
+    }
+    .btn-circle.btn-md {
+        width: 50px;
+        height: 50px;
+        padding: 7px 10px;
+        border-radius: 25px;
+        font-size: 10px;
+        text-align: center;
+    }
+    .btn-circle.btn-xl {
+        width: 70px;
+        height: 70px;
+        padding: 10px 16px;
+        border-radius: 35px;
+        font-size: 12px;
+        text-align: center;
+    }
