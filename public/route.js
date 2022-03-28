@@ -672,7 +672,7 @@ routeExp.route("/savetime").post(async function (req, res) {
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
         sendEmail(
-          'ricardoramandimbisoa@gmail.com',
+          'andy.solumada@gmail.com',
           "Time logged",
           htmlAlert(session.m_code, project)
         );
