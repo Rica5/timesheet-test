@@ -619,7 +619,7 @@ routeExp.route("/timedefine").get(async function (req, res) {
         }
       )
       .then(async () => {
-        var projects = await projectSchema.find({ parent: { $ne: "" } });
+        var projects = await projectSchema.find({});
         res.render("Timedefine.html", { available_project: projects });
       });
   } else {
