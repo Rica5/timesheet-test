@@ -6,12 +6,14 @@ var month_amount = document.getElementById("month_amount");
 var project = document.getElementById("project");
 var accueil = document.getElementById("acc");
 var load = document.getElementById("lp");
+var nodata = document.getElementById("nd");
 
 function choose(){
     if (project.value == ""){
         accueil.style.display = "block";
         show.style.display = "none";
         load.style.display = "none";
+        nodata.style.display = "none";
         document.getElementById("m1").start();
         document.getElementById("m2").start();
     }
@@ -19,6 +21,7 @@ function choose(){
         accueil.style.display = "none";
         show.style.display = "none";
         load.style.display = "block";
+        nodata.style.display = "none";
         sendRequest_info("/getinfo",project.value);
     }
    
@@ -32,7 +35,14 @@ function sendRequest_info(url,project) {
           if (this.responseText == "retour"){
 		      window.location = "/";
 	      }
+        else if(this.responseText == "error"){
+          load.style.display = "none";
+          show.style.display = "none";
+          accueil.style.display = "none";
+          nodata.style.display = "block";
+        }
           else{
+            nodata.style.display = "none";
         load.style.display = "none";
         show.style.display = "block";
         var data = this.responseText.split(",");

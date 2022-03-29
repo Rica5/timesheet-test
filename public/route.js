@@ -19,6 +19,7 @@ var ws;
 var filename;
 var date_data = [];
 
+
 //Mailing
 var transporter = nodemailer.createTransport({
   service: "gmail",
@@ -537,7 +538,8 @@ routeExp.route("/getinfo").post(async function (req, res) {
         projects: project,
         validation: true,
       });
-      var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
+      if (alltimes.length != 0){
+        var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
       const endOfMonth = moment().daysInMonth();
       var actually = 1;
       const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -562,6 +564,10 @@ routeExp.route("/getinfo").post(async function (req, res) {
       minutes = 0;
       var send = project_info(alltimes,am.amount) + "," + timepassed + "," + amount;
       res.send(send);
+      }
+      else{
+        res.send("error");
+      }
     }
      else{
         var send ="";
@@ -572,7 +578,8 @@ routeExp.route("/getinfo").post(async function (req, res) {
             projects: project_name,
             validation: true,
           });
-          var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
+          if (alltimes.length != 0){
+               var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
           const endOfMonth = moment().daysInMonth();
           var actually = 1;
           const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -601,17 +608,28 @@ routeExp.route("/getinfo").post(async function (req, res) {
           timepassedh += parseInt(cum2[0].split(',')[0].split(' ')[0]);
           timepassedmin += parseInt(cum2[0].split(',')[0].split(' ')[3]);
           amounts += parseFloat(cum2[1].split(' ')[0]);
+          }
+          else{
+            send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
+          }
+         
         }
-        while (timepassedmin > 60) {
-          timepassedh += 1;
-          timepassedmin = timepassedmin - 60;
+        if (send != "error"){
+          while (timepassedmin > 60) {
+            timepassedh += 1;
+            timepassedmin = timepassedmin - 60;
+          }
+          while (timepassed1min > 60) {
+            timepassed1h += 1;
+            timepassed1min = timepassed1min - 60;
+          }
+          send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
+          res.send(send);
         }
-        while (timepassed1min > 60) {
-          timepassed1h += 1;
-          timepassed1min = timepassed1min - 60;
+        else {
+          res.send(send);
         }
-        send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
-        res.send(send);
+        
       }
     });
   }
@@ -672,7 +690,7 @@ routeExp.route("/savetime").post(async function (req, res) {
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
         sendEmail(
-          'ricardoramandimbisoa@gmail.com',
+          'andy.solumada@gmail.com',
           "Time logged",
           htmlAlert(session.m_code, project)
         );
