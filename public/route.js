@@ -243,13 +243,19 @@ routeExp.route("/filter").post(async function (req, res) {
       datestart == "" ? "" : datecount.push(1);
       dateend == "" ? "" : datecount.push(2);
       var parent_project = await projectSchema.findOne({project_name:project});
-      if (parent_project.parent == "y"){
+      if (parent_project.length != 0){
+           if (parent_project.parent == "y"){
           delete request.projects;
           request.parent = parent_project.project_name;
       }
-      else{
-        delete request.parent;
+        else{
+          delete request.parent;
+            }
       }
+    else{
+       delete request.parent;
+    }
+     
       console.log(request);
       if (datecount.length == 2) {
         var day = moment
