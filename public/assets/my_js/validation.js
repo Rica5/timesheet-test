@@ -21,6 +21,19 @@ function sendclick(){
     sendRequest_false('/denied',denie,mcode,rejected.value,task,projetrej);
     rejected.value="";
 }
+const queryString = window.location.search;
+			const urlParams = new URLSearchParams(queryString);
+			const search = urlParams.get('search');
+//istener filter
+
+			setTimeout(()=>{
+				filter = document.querySelector("input[type='search']");
+				var table = $('#datatable-default').DataTable();
+				if (search != null){
+					table.search( search ).draw();
+				}
+				
+			},1000)
 
 function sendRequest_true(url,id) {
     var http = new XMLHttpRequest();
@@ -28,7 +41,7 @@ function sendRequest_true(url,id) {
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-          window.location = "/validation";
+          window.location = "/validation?search="+filter.value;
       }
     };
     http.send("id="+id);
@@ -39,7 +52,7 @@ function sendRequest_true(url,id) {
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
-             window.location = "/validation";
+        window.location = "/validation?search="+filter.value;
       }
     };
     http.send("id="+id+"&m_code="+mcode+"&task="+task+"&projetr="+projetr+"&message="+message);

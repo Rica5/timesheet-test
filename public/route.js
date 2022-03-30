@@ -7,16 +7,15 @@ const projectSchema = require("../models/Project");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
 const ExcelFile = require("sheetjs-style");
-
-
+var num_file = 0;
+const fs = require('fs');
+ 
 //Variable globale
 var hours = 0;
 var minutes = 0;
 var data = [];
 var totaltime = "";
-var datatowrite;
 var ws;
-var filename;
 var date_data = [];
 
 //Mailing
@@ -81,6 +80,10 @@ routeExp.route("/login").post(async function (req, res) {
           res.redirect("/timedefine");
         } else {
            session.occupation_a = logger.occupation;
+           session.request = {
+            validation: true,
+            occupation: "user",
+          };
           res.redirect("/management"); 
         }
       } else {
@@ -193,7 +196,7 @@ routeExp.route("/employees").get(async function (req, res) {
         var timesheets = await TimesheetsSchema.find({ validation: true }).sort(
           { $natural: -1 }
         );
-        datatowrite = timesheets;
+        session.datatowrite = timesheets;
         var projects = await projectSchema.find({});
 
         res.render("Employees.html", {
@@ -215,10 +218,7 @@ routeExp.route("/newemployee").get(async function (req, res) {
   }
 });
 //Filter data
-var request = {
-  validation: true,
-  occupation: "user",
-};
+
 routeExp.route("/filter").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
@@ -237,19 +237,23 @@ routeExp.route("/filter").post(async function (req, res) {
       }
     )
     .then(async () => {
-      mcode == "" ? delete request.m_code : (request.m_code = mcode);
-      project == "" ? delete request.projects : (request.projects = project);
+      mcode == "" ? delete session.request.m_code : (session.request.m_code = mcode);
+      project == "" ? delete session.request.projects : (session.request.projects = project);
       datestart == "" ? "" : datecount.push(1);
       dateend == "" ? "" : datecount.push(2);
       var parent_project = await projectSchema.findOne({project_name:project});
-      if (parent_project.parent == "y"){
-          delete request.projects;
-          request.parent = parent_project.project_name;
+      if (parent_project){
+           if (parent_project.parent == "y"){
+          delete session.request.projects;
+          session.request.parent = parent_project.project_name;
       }
-      else{
-        delete request.parent;
+        else{
+          delete session.request.parent;
+            }
       }
-      console.log(request);
+    else{
+       delete session.request.parent;
+    }
       if (datecount.length == 2) {
         var day = moment
           .duration(
@@ -257,9 +261,9 @@ routeExp.route("/filter").post(async function (req, res) {
           )
           .asDays();
         for (i = 0; i <= day; i++) {
-          request.date = datestart;
-          date_data.push(request.date);
-          var getdata = await TimesheetsSchema.find(request).sort({
+          session.request.date = datestart;
+          date_data.push(session.request.date);
+          var getdata = await TimesheetsSchema.find(session.request).sort({
             $natural: -1,
           });
           if (getdata.length != 0) {
@@ -275,30 +279,30 @@ routeExp.route("/filter").post(async function (req, res) {
             datatosend[0].push(datatosend[i][d]);
           }
         }
-        datatowrite = datatosend[0];
+        session.datatowrite = datatosend[0];
         res.send(datatosend[0]);
       } else if (datecount.length == 1) {
         if (datecount[0] == 1) {
-          request.date = datestart;
-          datatosend = await TimesheetsSchema.find(request).sort({
+          session.request.date = datestart;
+          datatosend = await TimesheetsSchema.find(session.request).sort({
             $natural: -1,
           });
-          datatowrite = datatosend;
+          session.datatowrite = datatosend;
           res.send(datatosend);
         } else {
-          request.date = dateend;
-          datatosend = await TimesheetsSchema.find(request).sort({
+          session.request.date = dateend;
+          datatosend = await TimesheetsSchema.find(session.request).sort({
             $natural: -1,
           });
-          datatowrite = datatosend;
+          session.datatowrite = datatosend;
           res.send(datatosend);
         }
       } else {
-        delete request.date;
-        datatosend = await TimesheetsSchema.find(request).sort({
+        delete session.request.date;
+        datatosend = await TimesheetsSchema.find(session.request).sort({
           $natural: -1,
         });
-        datatowrite = datatosend;
+        session.datatowrite = datatosend;
         res.send(datatosend);
       }
     });
@@ -521,6 +525,7 @@ routeExp.route("/about").get(async function (req, res) {
 routeExp.route("/getinfo").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
+    session.send = [];
   var project = req.body.project;
   mongoose
     .connect(
@@ -537,7 +542,8 @@ routeExp.route("/getinfo").post(async function (req, res) {
         projects: project,
         validation: true,
       });
-      var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
+      if (alltimes.length != 0){
+        var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
       const endOfMonth = moment().daysInMonth();
       var actually = 1;
       const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -561,7 +567,15 @@ routeExp.route("/getinfo").post(async function (req, res) {
       hours = 0;
       minutes = 0;
       var send = project_info(alltimes,am.amount) + "," + timepassed + "," + amount;
+      session.send.push({
+        name:project,
+        infos:send
+      });
       res.send(send);
+      }
+      else{
+        res.send("error");
+      }
     }
      else{
         var send ="";
@@ -572,6 +586,9 @@ routeExp.route("/getinfo").post(async function (req, res) {
             projects: project_name,
             validation: true,
           });
+          if (alltimes.length != 0){
+            var tab = [0,0,0,0,0,0];
+            tab[0]+=timepassedh;tab[1]+=timepassedmin;tab[2]+=amounts;tab[3]+=timepassed1h;tab[4]+=timepassed1min;tab[5]+=amount1;
           var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
           const endOfMonth = moment().daysInMonth();
           var actually = 1;
@@ -597,21 +614,50 @@ routeExp.route("/getinfo").post(async function (req, res) {
           amount1 += parseFloat(calcul_euro(am.amount, hours, minutes));
           hours = 0;
           minutes = 0;
+
           var cum2 = project_info(alltimes,am.amount).split(',');
           timepassedh += parseInt(cum2[0].split(',')[0].split(' ')[0]);
           timepassedmin += parseInt(cum2[0].split(',')[0].split(' ')[3]);
           amounts += parseFloat(cum2[1].split(' ')[0]);
-        }
-        while (timepassedmin > 60) {
-          timepassedh += 1;
-          timepassedmin = timepassedmin - 60;
-        }
-        while (timepassed1min > 60) {
-          timepassed1h += 1;
-          timepassed1min = timepassed1min - 60;
+          while (timepassedmin >= 60) {
+            timepassedh += 1;
+            timepassedmin = timepassedmin - 60;
+          }
+          while (timepassed1min >= 60) {
+            timepassed1h += 1;
+            timepassed1min = timepassed1min - 60;
+          }
+          console.log(timepassedh + " "+ timepassedmin);
+          send = (timepassedh - parseInt(tab[0])) + " H : " + (timepassedmin - parseInt(tab[1])) + " MN," + (amounts.toFixed(2) - parseFloat(tab[2])) + " €," +  (timepassed1h - parseInt(tab[3])) + " H : " + (timepassed1min - parseInt(tab[4])) + " MN," + (amount1.toFixed(2) - parseFloat(tab[5])) + " €";
+         
+            session.send.push({
+              name:sub[p].project_name,
+              infos:send
+            });
+          }
+          else{
+            send = 0 + " H : " + 0 + " MN," + 0 + " €," +  0 + " H : " + 0 + " MN," + 0 + " €";
+            session.send.push({
+              name:sub[p].project_name,
+              infos:send
+            });
+            console.log(timepassedmin);
+            send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
+          }    
         }
         send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
-        res.send(send);
+        session.send.push({
+          name:"",
+          infos:send
+        });
+        if (send != "error"){
+          send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
+          res.send(send);
+        }
+        else {
+          res.send(send);
+        }
+        
       }
     });
   }
@@ -672,7 +718,7 @@ routeExp.route("/savetime").post(async function (req, res) {
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
         sendEmail(
-          'ricardoramandimbisoa@gmail.com',
+          'andy.solumada@gmail.com',
           "Time logged",
           htmlAlert(session.m_code, project)
         );
@@ -703,8 +749,8 @@ routeExp.route("/generate").post(async function (req, res) {
       }
     )
     .then(async () => {
-      if (request.m_code) {
-         var us = await UserSchema.findOne({m_code:request.m_code});
+      if (session.request.m_code) {
+         var us = await UserSchema.findOne({m_code:session.request.m_code});
         data.push([
           "MCODE",
           "Number of Agent",
@@ -714,49 +760,50 @@ routeExp.route("/generate").post(async function (req, res) {
           "Start Time",
           "End Time",
         ]);
-        generate_excel(datatowrite,us.amount);
-        if (newsheet.SheetNames.includes(request.m_code)) {
+        generate_excel(session.datatowrite,us.amount);
+        if (newsheet.SheetNames.includes(session.request.m_code)) {
         } else {
-          newsheet.SheetNames.push(request.m_code);
+          newsheet.SheetNames.push(session.request.m_code);
         }
-        newsheet.Sheets[request.m_code] = ws;
+        newsheet.Sheets[session.request.m_code] = ws;
         hours = 0;
         minutes = 0;
         data = [];
         if (newsheet.SheetNames.length != 0) {
-          filename = request.m_code + ".xlsx";
-          ExcelFile.writeFile(newsheet, filename);
+          sesssion.filename = "N°"+num_file+ " " + session.request.m_code + ".xlsx";
+          num_file++;
+          ExcelFile.writeFile(newsheet, session.filename);
         }
-        delete request.m_code;
-        delete request.date;
-        delete request.projects;
-        delete request.date;
-        delete request.parent;
+        delete session.request.m_code;
+        delete session.request.date;
+        delete session.request.projects;
+        delete session.request.date;
+        delete session.request.parent;
       } else {
         var all_employes = await UserSchema.find({ occupation: "user" });
         for (e = 0; e < all_employes.length; e++) {
           data.push([
             "MCODE",
-            "Number of Agent",
-            "Project Name",
-            "Date",
-            "Task ",
-            "Start Time",
-            "End Time",
+            "NUMBER OF AGENT",
+            "PROJECT NAME",
+            "DATE",
+            "TASK",
+            "START TIME",
+            "END TIME",
           ]);
-          request.m_code = all_employes[e].m_code;
+          session.request.m_code = all_employes[e].m_code;
           var datanew = [];
           if (date_data.length != 0) {
-            for (i = 0; i < datatowrite.length; i++) {
-              if (datatowrite[i].m_code == all_employes[e].m_code) {
-                datanew.push(datatowrite[i]);
+            for (i = 0; i < session.datatowrite.length; i++) {
+              if (session.datatowrite[i].m_code == all_employes[e].m_code) {
+                datanew.push(session.datatowrite[i]);
               }
             }
             generate_excel(datanew,all_employes[e].amount);
             datanew = [];
           } else {
-            datatowrite = await TimesheetsSchema.find(request);
-            generate_excel(datatowrite,all_employes[e].amount);
+            session.datatowrite = await TimesheetsSchema.find(session.request);
+            generate_excel(session.datatowrite,all_employes[e].amount);
           }
 
           if (newsheet.SheetNames.includes(all_employes[e].m_code)) {
@@ -768,14 +815,39 @@ routeExp.route("/generate").post(async function (req, res) {
           minutes = 0;
           data = [];
         }
-        delete request.m_code;
-        delete request.date;
-        delete request.projects;
-        delete request.date;
-        delete request.parent;
+        if (session.send && req.body.projet){
+          data.push(["PROJECT(S)","TOTAL HOUR","TOTAL AMOUNT"]);
+          var tot = session.send;
+          if (tot.length != 1){
+            for(i=0;i<tot.length;i++){
+              if (i != tot.length - 1){
+                data.push([tot[i].name,tot[i].infos.split(',')[0],tot[i].infos.split(',')[1]]);
+              }
+              else{
+                data.push(["TOTAL",tot[i].infos.split(',')[0],tot[i].infos.split(',')[1]]);
+              }
+              
+            }
+          }
+          else{
+            data.push([tot[0].name,tot[0].infos.split(',')[0],tot[0].infos.split(',')[1]]);
+          }
+          newsheet.SheetNames.push("TOTAL");
+          ws = ExcelFile.utils.aoa_to_sheet(data);
+          style();
+          newsheet.Sheets["TOTAL"] = ws;
+          data= [];
+        }
+       
+        delete session.request.m_code;
+        delete session.request.date;
+        delete session.request.projects;
+        delete session.request.date;
+        delete session.request.parent;
         if (newsheet.SheetNames.length != 0) {
-          filename = "Timesheets.xlsx";
-          ExcelFile.writeFile(newsheet, filename);
+          session.filename = "N°"+num_file+" Timesheets.xlsx";
+          num_file++;
+          ExcelFile.writeFile(newsheet, session.filename);
         }
       }
 
@@ -791,7 +863,14 @@ routeExp.route("/generate").post(async function (req, res) {
 routeExp.route("/download").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
-    res.download(filename);
+    res.download(session.filename, function(err){
+      fs.unlink(session.filename, function (err) {            
+        if (err) {                                                 
+            console.error(err);                                    
+        }                                                          
+       console.log('File has been Deleted');                           
+    });         
+    });
   }
 });
 //logout
@@ -836,6 +915,9 @@ function generate_excel(datatowrites,rate) {
     calcul_euro(rate, hours, minutes).toFixed(2) + " €",
   ]);
   ws = ExcelFile.utils.aoa_to_sheet(data);
+  style();
+}
+function style(){
   var cellule = ["A", "B", "C", "D", "E", "F", "G"];
   for (c = 0; c < cellule.length; c++) {
     for (i = 1; i <= data.length; i++) {

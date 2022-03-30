@@ -19,3 +19,6 @@ function sendRequest_generate(url) {
     loading.style.display = "block";
       sendRequest_generate("/generate");
   }
+  function downloads(){
+    btnd.disabled =true;
+  }
