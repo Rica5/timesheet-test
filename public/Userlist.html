@@ -5,7 +5,7 @@
 		<!-- Basic -->
 		<meta charset="UTF-8">
 
-		<title>Validate time logged</title>
+		<title>Timesheets Users List</title>
 		<meta name="keywords" content="HTML5 Admin Template" />
 		<meta name="description" content="Porto Admin - Responsive HTML5 Template">
 		<meta name="author" content="okler.net">
@@ -111,12 +111,12 @@
 													Timesheets of employees
 												</a>
 											</li>
-											<li class="nav-active">
+											<li >
 												<a href="/validation">
 													Validation Page
 												</a>
 											</li>
-											<li>
+                                            <li class="nav-active">
 												<a href="/userlist">
 													Users Lists
 												</a>
@@ -143,7 +143,7 @@
 
 				<section role="main" class="content-body">
 					<header class="page-header">
-						<h2>Time validation</h2>
+						<h2>Users List</h2>
 					
 						<div class="right-wrapper pull-right">
 							<ol class="breadcrumbs">
@@ -152,7 +152,7 @@
 										<i class="fa fa-home"></i>
 									</a>
 								</li>
-								<li><span>Validation</span></li>
+								<li><span>List User</span></li>
 								<li><span>Timesheets</span></li>
 							</ol>
 					
@@ -163,121 +163,117 @@
 					<!-- start: page -->
 					<section class="panel">
 						<header class="panel-heading">
-							<h2 class="panel-title text-center">Time waiting for validation</h2>
-							<hr>
+							<h2 class="panel-title text-center">Ttimesheets Users List</h2>
+                            
 						</header>
+                        <div id="notif" class="col-sm-6 notification">
+                            
+                        </div>
+                        <br>
+                        
 						<div class="panel-body">
 							<table class="table table-bordered table-striped mb-none" id="datatable-default" >
 								<thead style="background-color: #619FCB;color:white">
 									<tr>
+                                        <th>USERNAME</th>
 										<th>M-CODE</th>
-										<th>Number of agent</th>
-										<th>Project</th>
-										<th>Date</th>
-										<th>Time Start</th>
-										<th>Time end</th>
-										<th>Tasks accomplished</th>
-										<th>Validation</th>
+										<th>NUMBER OF AGENT</th>
+										<th>AMOUNT</th>
+                                        <th>ACTIONS</th>
 									</tr>
 								</thead>
 								<tbody id ="alldata">
-									<% timesheets.forEach(function(timesheets) { %>
-											<tr id="<%= timesheets._id %>">
-												<td><%= timesheets.m_code %></td>
-												<td><%= timesheets.num_agent %></td>
-												<td><%= timesheets.projects %></td>
-												<td><%= timesheets.date %></td>
-												<td><%= timesheets.time_start %></td>
-												<td><%= timesheets.time_end %></td>
-												<td><%= timesheets.task %></td>
+									<% users.forEach(function(user) { %>
+											<tr id="<%= user._id %>">
+                                                <td><%= user.username %></td>
+												<td><%= user.m_code %></td>
+												<td><%= user.num_agent %></td>
+												<td><%= user.amount %></td>
 												<td style="width: 60px;">
 													<div class="row" style="width: 100px;">
 													<div class="col-sm-5 text-left">
-														<button type="button" class="btn btn-success btn-circle btn-sm" onclick="validate_true('<%= timesheets._id %>')"><i class="fa fa-check"></i></button>
+														<a class="modal-with-form" href="#modalForm"><button type="button" onclick="getdata('/getuser','<%= user._id %>')" class="btn btn-warning btn-circle btn-sm"><i class="fa fa-pencil"></i></button></a>
 													</div>
 													<div class="col-sm-5 text-right">
-														<a class="modal-with-form" href="#modalForm"><button type="button" class="btn btn-danger btn-circle btn-sm text-right" onclick='validate_false("<%= timesheets._id %>","<%= timesheets.m_code %>","<%= timesheets.task %>","<%= timesheets.projects %>")'><i class="fa fa-ban"></i></button></a>
+														<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.m_code %>")' class="btn btn-danger btn-circle btn-sm text-right"><i class="fa fa-times-circle"></i></button></a>
 													</div>
-												</div>
-													
-													
+												</div>	
 												</td>
 											</tr>		   
 									  <% }); %>
 								</tbody>
 							</table>
 						</div>
-						<br>
-						<a class="mb-xs mt-xs mr-xs modal-with-zoom-anim" href="#modalAnim"><button id="vall" class="btn btn-success btn-sm pull-right"><i class="fa fa-check"></i> VALIDATE ALL</button></a>
 					</section>
 			</div>
-		</section>
-		<div class="panel-body">
-			<!-- Modal Form reject -->
-			<div id="modalForm" class="modal-block modal-block-primary mfp-hide">
-				<section class="panel">
-					<header class="panel-heading">
-						<h2 class="panel-title">Message to send</h2>
-					</header>
-					<div class="panel-body">
-						<div id="reason" class="card" style="width: 100rem;">
-							<div class="card-body">
-								<div class="row">
-									<div class="col-md-6">
-										<textarea id="rejected" placeholder="Rejected Reason" onkeyup="" class="form-control" name="task" rows="2" cols="50" required></textarea>
-										<br>
-										<button onclick="sendclick()" class="btn btn-success btn-sm pull-right modal-confirm "><i class="fa fa-envelope" style="color: white;"></i> SEND MESSAGE</button>
+            <!-- Modal Form -->
+				<div id="modalForm" class="modal-block modal-block-primary mfp-hide">
+					<section class="panel">
+						<header class="panel-heading">
+							<h2 class="panel-title">Update User</h2>
+						</header>
+						<div class="panel-body">
+								<div class="form-group mt-lg">
+									<label class="col-sm-3 control-label">MCODE</label>
+									<div class="col-sm-9">
+										<input type="text" id="m_code" name="m_code" onkeyup="verify()" class="form-control" placeholder="Enter m-code here..." required/>
 									</div>
 								</div>
+                                <div class="form-group mt-lg">
+									<label class="col-sm-3 control-label">NUMBER AGENT</label>
+									<div class="col-sm-9">
+										<input type="text" id="num_agent" name="number_agent" onkeyup="verify()" class="form-control" placeholder="Enter Number agent here..." required/>
+									</div>
+								</div>
+                                <div class="form-group mt-lg">
+									<label class="col-sm-3 control-label">Amount</label>
+									<div class="col-sm-9">
+										<input type="number" id="amount" name="amount" onkeyup="verify()" class="form-control" placeholder="Enter Amount here..." required/>
+									</div>
+								</div>
+								
+						</div>
+						<footer class="panel-footer">
+							<div class="row">
+								<div class="col-md-12 text-right">
+									<button id ="btnu" class="btn btn-primary modal-confirm" onclick="modify()">Update</button>
+									<button class="btn btn-default modal-dismiss">Cancel</button>
+								</div>
 							</div>
-						  </div>
-					</div>
-					<footer class="panel-footer">
-						<div class="row">
-							<div class="col-md-12 text-right">
-								<button class="btn btn-default modal-dismiss">Cancel</button>
-							</div>
-						</div>
-					</footer>
-				</section>
-		</div>
-		</div>
-		<!-- Modal Animation -->
-		<div id="modalAnim" class="zoom-anim-dialog modal-block modal-block-primary mfp-hide">
-			<section class="panel">
-				<header class="panel-heading">
-					<h2 class="panel-title">Are you sure?</h2>
-				</header>
-				<div class="panel-body">
-					<div class="modal-wrapper">
-						<div class="modal-icon">
-							<i class="fa fa-question-circle"></i>
-						</div>
-						<div class="modal-text">
-							<p>Are you sure to validate all time logged</p>
-						</div>
-					</div>
+						</footer>
+					</section>
 				</div>
-				<footer class="panel-footer">
-					<div class="row">
-						<div class="col-md-12 text-right">
-							<button class="btn btn-primary" onclick="valide_all()">Confirm</button>
-							<button class="btn btn-default modal-dismiss">Cancel</button>
-						</div>
-					</div>
-				</footer>
-			</section>
-		</div>
-		<script>
-			if ('<%= timesheets.length %>' <= 1){
-				document.getElementById("vall").disabled = true;
-			}
-			else{
-				document.getElementById("vall").disabled = false;
-			}
-		</script>
-		
+                <div class="panel-body">
 
+                    <!-- Modal Primary -->
+
+                    <div id="modalDanger" class="modal-block modal-block-danger mfp-hide">
+                        <section class="panel">
+                            <header class="panel-heading">
+                                <h2 class="panel-title">Are you sure?</h2>
+                            </header>
+                            <div class="panel-body">
+                                <div class="modal-wrapper">
+                                    <div class="modal-icon">
+                                        <i class="fa fa-times-circle"></i>
+                                    </div>
+                                    <div class="modal-text">
+                                        <h4>User deletion</h4>
+                                        <p id="textwarn"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <footer class="panel-footer">
+                                <div class="row">
+                                    <div class="col-md-12 text-right">
+                                        <button class="btn btn-primary modal-confirm" onclick="confirm_del()">Confirm</button>
+                                        <button class="btn btn-default modal-dismiss">Cancel</button>
+                                    </div>
+                                </div>
+                            </footer>
+                        </section>
+                    </div>
+		</section>
 		<!-- Vendor -->
 		<script src="assets/vendor/jquery/jquery.js"></script>
 		<script src="assets/vendor/jquery-browser-mobile/jquery.browser.mobile.js"></script>
@@ -309,6 +305,8 @@
 		<script src="assets/javascripts/tables/examples.datatables.tabletools.js"></script>
 		<script src="assets/my_js/validation.js"></script>
 		<script src="assets/javascripts/ui-elements/examples.modals.js"></script>
+        <script src="assets/javascripts/tables/examples.datatables.editable.js"></script>
+        <script src="assets/my_js/update_user.js"></script>
 		<script>
 			
 			

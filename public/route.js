@@ -54,6 +54,7 @@ routeExp.route("/").get(async function (req, res) {
     res.render("LoginPage.html", { erreur: "" });
   }
 });
+
 //Post login
 routeExp.route("/login").post(async function (req, res) {
   session = req.session;
@@ -173,6 +174,7 @@ routeExp.route("/change").post(async function (req, res) {
 //Management Page
 routeExp.route("/management").get(async function (req, res) {
   session = req.session;
+  session.filtrage = null;
   if (session.occupation_a == "admin") {
     res.render("ManagementPage.html");
   } else {
@@ -193,14 +195,16 @@ routeExp.route("/employees").get(async function (req, res) {
         }
       )
       .then(async () => {
-        var timesheets = await TimesheetsSchema.find({ validation: true }).sort(
-          { $natural: -1 }
-        );
-        session.datatowrite = timesheets;
+        if (Object.keys(session.request).length == 2 || session.filtrage != ""){
+              
+          var timesheets = await TimesheetsSchema.find({ validation: true }).sort(
+            { "_id": -1 }
+          );
+          session.datatowrite = timesheets;
+        }
         var projects = await projectSchema.find({});
-
         res.render("Employees.html", {
-          timesheets: timesheets,
+          timesheets: session.datatowrite,
           available_project: projects,
         });
       });
@@ -211,6 +215,7 @@ routeExp.route("/employees").get(async function (req, res) {
 //New employee
 routeExp.route("/newemployee").get(async function (req, res) {
   session = req.session;
+  session.filtrage = null;
   if (session.occupation_a == "admin") {
     res.render("newemployee.html");
   } else {
@@ -222,6 +227,7 @@ routeExp.route("/newemployee").get(async function (req, res) {
 routeExp.route("/filter").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
+    session.filtrage = "";
   var mcode = req.body.mcode;
   var project = req.body.project;
   var datestart = req.body.startdate;
@@ -237,7 +243,7 @@ routeExp.route("/filter").post(async function (req, res) {
       }
     )
     .then(async () => {
-      mcode == "" ? delete session.request.m_code : (session.request.m_code = mcode);
+      mcode == "" ? delete session.request.m_code : (session.request.m_code = {'$regex':mcode,'$options' : 'i'});
       project == "" ? delete session.request.projects : (session.request.projects = project);
       datestart == "" ? "" : datecount.push(1);
       dateend == "" ? "" : datecount.push(2);
@@ -264,7 +270,7 @@ routeExp.route("/filter").post(async function (req, res) {
           session.request.date = datestart;
           date_data.push(session.request.date);
           var getdata = await TimesheetsSchema.find(session.request).sort({
-            $natural: -1,
+            "_id": -1,
           });
           if (getdata.length != 0) {
             datatosend.push(getdata);
@@ -285,14 +291,14 @@ routeExp.route("/filter").post(async function (req, res) {
         if (datecount[0] == 1) {
           session.request.date = datestart;
           datatosend = await TimesheetsSchema.find(session.request).sort({
-            $natural: -1,
+            "_id": -1,
           });
           session.datatowrite = datatosend;
           res.send(datatosend);
         } else {
           session.request.date = dateend;
           datatosend = await TimesheetsSchema.find(session.request).sort({
-            $natural: -1,
+            "_id": -1,
           });
           session.datatowrite = datatosend;
           res.send(datatosend);
@@ -300,9 +306,10 @@ routeExp.route("/filter").post(async function (req, res) {
       } else {
         delete session.request.date;
         datatosend = await TimesheetsSchema.find(session.request).sort({
-          $natural: -1,
+          "_id": -1,
         });
         session.datatowrite = datatosend;
+        session.request.m_code = mcode;
         res.send(datatosend);
       }
     });
@@ -334,7 +341,7 @@ routeExp.route("/addemp").post(async function (req, res) {
             { m_code: mcode },
             { num_agent: num_agent },
           ],
-        })
+          })
       ) {
         res.send("error");
       } else {
@@ -361,6 +368,7 @@ routeExp.route("/addemp").post(async function (req, res) {
    res.send("retour");
   }
 });
+
 //add new project
 routeExp.route("/addproject").post(async function (req, res) {
   session = req.session;
@@ -394,11 +402,54 @@ routeExp.route("/addproject").post(async function (req, res) {
     res.redirect("/")
   }
 });
+//Add Administrator
+routeExp.route("/addadmin").post(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
+  var email = req.body.mail;
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+    if (
+      await UserSchema.findOne({username:email})
+    ) {
+      res.send("Admin already exist");
+    } else {
+      var passdefault = "timesheets"
+      var new_emp = {
+        username: email,
+        password: passdefault,
+        m_code: "",
+        num_agent: "",
+        occupation: "admin",
+        amount:0,
+      };
+      await UserSchema(new_emp).save();
+      sendEmail(
+        email,
+        "Authentification Timesheets",
+        htmlRender(email, passdefault)
+      );
+      res.send(email + " successfully added");
+    }
+  });
+}
+else{
+ res.send("retour");
+}
+});
 
 //Validation page
 routeExp.route("/validation").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
+    session.filtrage = null;
     mongoose
       .connect(
         "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -477,9 +528,10 @@ routeExp.route("/denied").post(async function (req, res) {
   }
 });
 //Validate all
-routeExp.route("/valideall").get(async function (req, res) {
+routeExp.route("/valideall").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
+    var opt = req.body.option;
     mongoose
       .connect(
         "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -489,11 +541,24 @@ routeExp.route("/valideall").get(async function (req, res) {
         }
       )
       .then(async () => {
-        await TimesheetsSchema.updateMany(
-          { validation: false },
-          { validation: true }
-        );
-        res.redirect("/employees");
+        if (opt != ""){
+          await TimesheetsSchema.updateMany({$or: [
+            { m_code: { '$regex': opt, '$options': 'i' } },
+            { num_agent: { '$regex': opt, '$options': 'i' } },
+            { projects: { '$regex': opt, '$options': 'i' } },
+            { date: { '$regex': opt, '$options': 'i' } }
+        ],validation:false},{validation:true});
+          res.send('part');
+        }
+        else{
+          await TimesheetsSchema.updateMany(
+            { validation: false },
+            { validation: true }
+          );
+          res.send("ok");
+        }
+        
+        
       });
   } else {
     res.redirect("/");
@@ -504,6 +569,7 @@ routeExp.route("/valideall").get(async function (req, res) {
 routeExp.route("/about").get(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
+    session.filtrage = null;
     mongoose
       .connect(
         "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -541,9 +607,11 @@ routeExp.route("/getinfo").post(async function (req, res) {
       var alltimes = await TimesheetsSchema.find({
         projects: project,
         validation: true,
-      });
+      }).sort(
+        { "_id": -1 }
+      );
       if (alltimes.length != 0){
-        var am = await UserSchema.findOne({m_code:alltimes[0].m_code});
+        var amount = 0;
       const endOfMonth = moment().daysInMonth();
       var actually = 1;
       const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
@@ -553,9 +621,12 @@ routeExp.route("/getinfo").post(async function (req, res) {
           projects: project,
           date: datetosearch,
           validation: true,
-        });
+        }).sort(
+          { "_id": -1 }
+        );
         for (i = 0; i < one.length; i++) {
           calcul_timediff(one[i].time_start, one[i].time_end);
+          amount += one[i].amount * timediff(one[i].time_start, one[i].time_end);
         }
         actually++;
         datetosearch = moment(datetosearch, "YYYY-MM-DD")
@@ -563,10 +634,9 @@ routeExp.route("/getinfo").post(async function (req, res) {
           .format("YYYY-MM-DD");
       }
       var timepassed = hours + " H : " + minutes + " MN";
-      var amount = calcul_euro(am.amount, hours, minutes).toFixed(2) + " €";
       hours = 0;
       minutes = 0;
-      var send = project_info(alltimes,am.amount) + "," + timepassed + "," + amount;
+      var send = project_info(alltimes) + "," + timepassed + "," + amount.toFixed(2) + " €";
       session.send.push({
         name:project,
         infos:send
@@ -602,6 +672,7 @@ routeExp.route("/getinfo").post(async function (req, res) {
             });
             for (i = 0; i < one.length; i++) {
               calcul_timediff(one[i].time_start, one[i].time_end);
+              amount1 += one[i].amount * timediff(one[i].time_start, one[i].time_end);
             }
             actually++;
             datetosearch = moment(datetosearch, "YYYY-MM-DD")
@@ -610,8 +681,6 @@ routeExp.route("/getinfo").post(async function (req, res) {
           }
           timepassed1h += hours;
           timepassed1min += minutes;
-          
-          amount1 += parseFloat(calcul_euro(am.amount, hours, minutes));
           hours = 0;
           minutes = 0;
 
@@ -627,7 +696,6 @@ routeExp.route("/getinfo").post(async function (req, res) {
             timepassed1h += 1;
             timepassed1min = timepassed1min - 60;
           }
-          console.log(timepassedh + " "+ timepassedmin);
           send = (timepassedh - parseInt(tab[0])) + " H : " + (timepassedmin - parseInt(tab[1])) + " MN," + (amounts.toFixed(2) - parseFloat(tab[2])) + " €," +  (timepassed1h - parseInt(tab[3])) + " H : " + (timepassed1min - parseInt(tab[4])) + " MN," + (amount1.toFixed(2) - parseFloat(tab[5])) + " €";
          
             session.send.push({
@@ -641,7 +709,6 @@ routeExp.route("/getinfo").post(async function (req, res) {
               name:sub[p].project_name,
               infos:send
             });
-            console.log(timepassedmin);
             send = timepassedh + " H : " + timepassedmin + " MN," + amounts.toFixed(2) + " €," +  timepassed1h + " H : " + timepassed1min + " MN," + amount1.toFixed(2) + " €";
           }    
         }
@@ -665,7 +732,75 @@ routeExp.route("/getinfo").post(async function (req, res) {
     res.send("retour");
   }
 });
-
+//Users List
+routeExp.route("/userlist").get(async function (req, res) {
+  session.filtrage = null;
+  mongoose
+      .connect(
+        "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+        {
+          useUnifiedTopology: true,
+          UseNewUrlParser: true,
+        }
+      )
+      .then(async () => {
+        var users = await UserSchema.find({ occupation: "user" });
+        res.render("Userlist.html",{users:users});
+      });
+})
+//getuser
+routeExp.route("/getuser").post(async function (req, res) {
+  var id = req.body.id;
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+    var user = await UserSchema.findOne({_id:id });
+    res.send(user.m_code + ","+user.num_agent +","+user.amount);
+  });
+})
+//Update User
+routeExp.route("/updateuser").post(async function (req, res) {
+  var id = req.body.id;
+  var m_code = req.body.code;
+  var num_agent = req.body.num;
+  var amount = req.body.am;
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+    var user = await UserSchema.findOne({_id:id });
+      await TimesheetsSchema.updateMany({m_code:user.m_code},{m_code:m_code,num_agent:num_agent});
+      await UserSchema.findOneAndUpdate({_id:id },{m_code:m_code,num_agent:num_agent,amount:amount});
+      res.send("User updated successfully");
+})
+})
+//Drop user 
+routeExp.route("/dropuser").post(async function (req, res) {
+  var m_code = req.body.code;
+  mongoose
+  .connect(
+    "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    {
+      useUnifiedTopology: true,
+      UseNewUrlParser: true,
+    }
+  )
+  .then(async () => {
+      await UserSchema.findOneAndDelete({m_code:m_code });
+      res.send("User deleted successfully");
+})
+})
 //Define time page
 routeExp.route("/timedefine").get(async function (req, res) {
   session = req.session;
@@ -699,6 +834,7 @@ routeExp.route("/savetime").post(async function (req, res) {
     m_code: session.m_code,
     num_agent: session.num_agent,
     projects: project,
+    amount:0,
     date: date,
     time_start: start_time,
     time_end: end_time,
@@ -714,6 +850,8 @@ routeExp.route("/savetime").post(async function (req, res) {
       }
     )
     .then(async () => {
+      var amount = await UserSchema.findOne({m_code:session.m_code});
+      new_time.amount = amount.amount;
       var parent = await projectSchema.findOne({project_name:project});
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
@@ -750,7 +888,6 @@ routeExp.route("/generate").post(async function (req, res) {
     )
     .then(async () => {
       if (session.request.m_code) {
-         var us = await UserSchema.findOne({m_code:session.request.m_code});
         data.push([
           "MCODE",
           "Number of Agent",
@@ -760,7 +897,7 @@ routeExp.route("/generate").post(async function (req, res) {
           "Start Time",
           "End Time",
         ]);
-        generate_excel(session.datatowrite,us.amount);
+        generate_excel(session.datatowrite);
         if (newsheet.SheetNames.includes(session.request.m_code)) {
         } else {
           newsheet.SheetNames.push(session.request.m_code);
@@ -770,7 +907,7 @@ routeExp.route("/generate").post(async function (req, res) {
         minutes = 0;
         data = [];
         if (newsheet.SheetNames.length != 0) {
-          sesssion.filename = "N°"+num_file+ " " + session.request.m_code + ".xlsx";
+          session.filename = "N°"+num_file+ " " + session.request.m_code + ".xlsx";
           num_file++;
           ExcelFile.writeFile(newsheet, session.filename);
         }
@@ -780,7 +917,15 @@ routeExp.route("/generate").post(async function (req, res) {
         delete session.request.date;
         delete session.request.parent;
       } else {
-        var all_employes = await UserSchema.find({ occupation: "user" });
+        var all_employes = [];
+        for (i=0;i<session.datatowrite.length;i++){
+           if (all_employes.includes(session.datatowrite[i].m_code)){
+
+           }
+           else{
+             all_employes.push(session.datatowrite[i].m_code);
+           }
+        }
         for (e = 0; e < all_employes.length; e++) {
           data.push([
             "MCODE",
@@ -791,26 +936,26 @@ routeExp.route("/generate").post(async function (req, res) {
             "START TIME",
             "END TIME",
           ]);
-          session.request.m_code = all_employes[e].m_code;
+          session.request.m_code = all_employes[e];
           var datanew = [];
           if (date_data.length != 0) {
             for (i = 0; i < session.datatowrite.length; i++) {
-              if (session.datatowrite[i].m_code == all_employes[e].m_code) {
+              if (session.datatowrite[i].m_code == all_employes[e]) {
                 datanew.push(session.datatowrite[i]);
               }
             }
-            generate_excel(datanew,all_employes[e].amount);
+            generate_excel(datanew);
             datanew = [];
           } else {
             session.datatowrite = await TimesheetsSchema.find(session.request);
-            generate_excel(session.datatowrite,all_employes[e].amount);
+            generate_excel(session.datatowrite);
           }
 
-          if (newsheet.SheetNames.includes(all_employes[e].m_code)) {
+          if (newsheet.SheetNames.includes(all_employes[e])) {
           } else {
-            newsheet.SheetNames.push(all_employes[e].m_code);
+            newsheet.SheetNames.push(all_employes[e]);
           }
-          newsheet.Sheets[all_employes[e].m_code] = ws;
+          newsheet.Sheets[all_employes[e]] = ws;
           hours = 0;
           minutes = 0;
           data = [];
@@ -890,6 +1035,7 @@ routeExp.route("/exit_u").get(function (req, res) {
 //Fonction a employer
 //Fonction generate excel
 function generate_excel(datatowrites,rate) {
+  var cumul = 0;
   for (i = 0; i < datatowrites.length; i++) {
     var ligne = [
       datatowrites[i].m_code,
@@ -902,6 +1048,7 @@ function generate_excel(datatowrites,rate) {
     ];
     data.push(ligne);
     calcul_timediff(datatowrites[i].time_start, datatowrites[i].time_end);
+    cumul +=  datatowrites[i].amount * timediff(datatowrites[i].time_start, datatowrites[i].time_end);
   }
   totaltime = hours + "H " + minutes + "MN";
   data.push(["", "", "", "", "", "TOTAL", totaltime]);
@@ -912,7 +1059,7 @@ function generate_excel(datatowrites,rate) {
     "",
     "",
     "AMOUNT",
-    calcul_euro(rate, hours, minutes).toFixed(2) + " €",
+    cumul.toFixed(2) + " €",
   ]);
   ws = ExcelFile.utils.aoa_to_sheet(data);
   style();
@@ -1035,6 +1182,17 @@ function calcul_timediff(startTime, endTime) {
     minutes = minutes - 60;
   }
 }
+function timediff(start,end){
+  start = moment(start, "HH:mm:ss a");
+  end = moment(end, "HH:mm:ss a");
+  var duration = moment.duration(end.diff(start));
+  //duration in hours
+  var hoursingle = parseInt(duration.asHours());
+
+  // duration in minutes
+  var minutesingle = parseInt(duration.asMinutes() % 60);
+  return hoursingle + (minutesingle/60);
+}
 function calcul_euro(euro, hour, minutes) {
   var montanthour = euro * hour;
   var montantminutes = (minutes / 60) * euro;
@@ -1049,15 +1207,17 @@ function htmlVerification(code) {
     "<h3></center>"
   );
 }
-function project_info(searchproject,a) {
+function project_info(searchproject) {
+  var amount = 0;
   for (i = 0; i < searchproject.length; i++) {
     calcul_timediff(searchproject[i].time_start, searchproject[i].time_end);
+    amount += searchproject[i].amount * timediff(searchproject[i].time_start,searchproject[i].time_end);
   }
-  var amount = calcul_euro(a, hours, minutes).toFixed(2) + " €";
+  
   var timepassed = hours + " H : " + minutes + " MN";
   hours = 0;
   minutes = 0;
-  var all = timepassed + "," + amount;
+  var all = timepassed + "," + amount.toFixed(2) + " €";
   return all;
 }
 module.exports = routeExp;

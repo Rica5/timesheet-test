@@ -15,6 +15,7 @@
 
 		<!-- Web Fonts  -->
 		<link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800|Shadows+Into+Light" rel="stylesheet" type="text/css">
+		<link rel="icon" type="image/png" href="assets/images/logo opt.png" />
 
 		<!-- Vendor CSS -->
 		<link rel="stylesheet" href="assets/vendor/bootstrap/css/bootstrap.css" />
@@ -116,6 +117,11 @@
 												</a>
 											</li>
 											<li>
+												<a href="/userlist">
+													Users Lists
+												</a>
+											</li>
+											<li>
 												<a href="/about">
 													About Project
 												</a>
@@ -160,8 +166,9 @@
 							<hr>
 							<div class="row">
 								<div class="col-sm-6">	
-								<a href="/newemployee"><button class="btn btn-success btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<button id="pnew" onclick="newproject_listen()" class="btn btn-primary btn-sm "><i class="fa fa-plus"></i> NEW PROJECTS</button>
+								<a href="/newemployee"><button class="btn btn-primary btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<button id="pnew" onclick="newproject_listen()" class="btn btn-success btn-sm "><i class="fa fa-plus"></i> NEW PROJECTS</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+								<a class="modal-with-form" href="#modalForm"><button class="btn btn-primary btn-sm "><i class="fa fa-plus"></i> NEW ADMINISTRATOR</button></a>
 							</div>
 							
 							<div id="notif" class="col-sm-6 notification">
@@ -314,72 +321,66 @@
 			</section>
 		</div>
 			</div>
+			<div class="panel-body">
+				
+
+				<!-- Modal Form -->
+				<div id="modalForm" class="modal-block modal-block-primary mfp-hide">
+					<section class="panel">
+						<header class="panel-heading">
+							<h2 class="panel-title">Add new administrator</h2>
+						</header>
+						<div class="panel-body">
+								<div class="form-group mt-lg">
+									<label class="col-sm-3 control-label">Email</label>
+									<div class="col-sm-9">
+										<input type="email" id="email" name="email" onkeyup="check()" class="form-control" placeholder="Enter Email here..." required/>
+									</div>
+								</div>
+								<br>
+						</div>
+						<footer class="panel-footer">
+							<div class="row">
+								<div class="col-md-12 text-right">
+									<button id="admin" class="btn btn-primary modal-confirm" onclick="add_admin()">ADD</button>
+									<button class="btn btn-default modal-dismiss">Cancel</button>
+								</div>
+							</div>
+						</footer>
+					</section>
+				</div>
+
+			</div>
 		</section>
 		<script>
-
-			var initData;
 			var load = document.getElementById("filter_load");
 			var gen = document.getElementById("generate_excel");
 			var download = document.getElementById("download");
 			var table = document.getElementById("datatable-default");
 			var parentelement = document.getElementById("alldata");
-			console.log('<%= timesheets.length %>');
-			check_button('<%= timesheets.length %>');
-			function show_data(Data){
-				parentelement = document.getElementById("alldata");
-				for (i=0;i<Data.length;i++){
-					var tr = document.createElement('tr');
-	
-					var tdmcode = document.createElement('td');
-					var textNode = document.createTextNode(Data[i].m_code);
-					tdmcode.appendChild(textNode);
-	
-					var tdnumberagent = document.createElement('td');
-					textNode = document.createTextNode(Data[i].num_agent);
-					tdnumberagent.appendChild(textNode);
-	
-					var tdproject = document.createElement('td');
-					textNode = document.createTextNode(Data[i].projects);
-					tdproject.appendChild(textNode);
-	
-					var tddate = document.createElement('td');
-					textNode = document.createTextNode(Data[i].date);
-					tddate.appendChild(textNode);
-	
-					var tdstart = document.createElement('td');
-					textNode = document.createTextNode(Data[i].time_start);
-					tdstart.appendChild(textNode);
-	
-					var tdend = document.createElement('td');
-					textNode = document.createTextNode(Data[i].time_end);
-					tdend.appendChild(textNode);
-	
-					var tdtask = document.createElement('td');
-					textNode = document.createTextNode(Data[i].task);
-					tdtask.appendChild(textNode);
-	
-	
-					tr.appendChild(tdmcode);tr.appendChild(tdnumberagent);tr.appendChild(tdproject);tr.appendChild(tddate);
-					tr.appendChild(tdstart);tr.appendChild(tdend);tr.appendChild(tdtask);
-					parentelement.append(tr);
-				}
+			var mcodes = document.getElementById("mcode");
+			var projects = document.getElementById("project");
+			var datestarts = document.getElementById("startdate");
+			var dateends = document.getElementById("enddate");
+			const queryString = window.location.search;
+			const urlParams = new URLSearchParams(queryString);
+			const code = urlParams.get('mcode');
+			const proj = urlParams.get('project');
+			const start = urlParams.get('start');
+			const end = urlParams.get('end');
+			if (queryString.length != 0){
+				document.getElementById("ch_title").innerHTML = "Your filtered data";
+				mcodes.value = code;
+				projects.value = proj;
+				datestarts.value = start;
+				dateends.value = end;
 			}
+			check_button('<%= timesheets.length %>');
 			function filtrate(){
 				load.style.display = "block";
-				removeAllChildNodes(parentelement);
-				var mcode = document.getElementById("mcode").value;
-				var project = document.getElementById("project").value;
-				var datestart = document.getElementById("startdate").value;
-				var dateend = document.getElementById("enddate").value;
-				if (mcode =="" && project =="" && datestart == "" && dateend==""){
-					window.location = "/employees";
-				}
-				else{
-					sendRequest_filter("/filter",mcode,project,datestart,dateend);
-				}
-				
-				
+				sendRequest_filter("/filter",mcodes.value,projects.value,datestarts.value,dateends.value);
 			}
+
 			function sendRequest_filter(url,mcode,project,startdate,enddate) {
 				var http = new XMLHttpRequest();
 				http.open("POST", url, true);
@@ -390,31 +391,21 @@
 						  window.location = "/";
 					  }
 					  else{
-						document.getElementById("download").disabled = true;
-						load.style.display = "none";
-						initData = JSON.parse(this.responseText);
-						show_data(initData);
-						check_button(initData.length);
-						if (initData.length != 0){
-							document.getElementById("ch_title").innerHTML = "Your Filtered Data";
+						if (mcodes.value =="" && projects.value =="" && datestarts.value == "" && dateends.value==""){
+							window.location = "/employees";
 						}
-						document.getElementById("datatable-default_paginate").remove();
-						document.getElementById("datatable-default_info").remove();
-						document.getElementById("datatable-default_length").remove();
-						document.getElementById("datatable-default_filter").remove();
-						table.removeAttribute("id");
+						else{
+							document.getElementById("download").disabled = true;
+						load.style.display = "none";
+						window.location = "/employees?mcode="+mcode+"&project=" +project+"&start=" +startdate+"&end=" +enddate;
+						}
+						
 					  }
 					
 				  }
 				};
 				http.send("mcode="+mcode+"&project="+project+"&startdate="+startdate+"&enddate="+enddate);
 			  }
-			  function removeAllChildNodes(parent) {
-				while (parent.firstChild) {
-					parent.removeChild(parent.firstChild);
-				}
-				check_button();
-			}
 			function check_button(count){
 				if (count == 0){
 					document.getElementById("generate_excel").disabled = true;
@@ -460,6 +451,7 @@
 		<script src="assets/javascripts/ui-elements/examples.modals.js"></script>
 		<script src="assets/my_js/addnewproject.js"></script>
 		<script src="assets/my_js/generate.js"></script>
+		<script src="assets/my_js/addnewadministrator.js"></script>
 		<script>
 			
 		</script>

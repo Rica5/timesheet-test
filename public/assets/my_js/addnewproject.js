@@ -1,27 +1,28 @@
 var newproject = document.getElementById('addproject');
-function newproject_listen(){
-    newproject.style.display = "block";
-}
+var btnaddp = document.getElementById("add_project");
 var project_done = false;
 var parent_done = true;
+
+function newproject_listen(){
+  btnaddp.disabled = true;
+    newproject.style.display = "block";
+}
+
 function cancel(){
     newproject.style.display = "none";
 }
 function add_new_project(){
-    var project = document.getElementById("newproject").value;
+    var projectp = document.getElementById("newproject").value;
     var status = document.getElementById("parent").value;
-    sendRequest('/addproject',project,status);
+    sendRequest_project('/addproject',projectp,status);
 
 }
-var btnadd = document.getElementById("add_project");
-btnadd.disabled = true;
+
 function project(){
     if (document.getElementById("newproject").value==""){
-        btnadd.disabled = true;
         project_done = false;
     }
     else{
-      btnadd.disabled = false;
       project_done = true;
     }
     verify_p();
@@ -29,7 +30,7 @@ function project(){
 function checking(){
   if (document.getElementById("sub").checked == true){
       document.getElementById("par").style.display = "block";
-      btnadd.disabled = true;
+      btnaddp.disabled = true;
       parent_done = false;
       verify_p();
   }
@@ -41,24 +42,25 @@ function checking(){
 }
 function select(){
   if (document.getElementById("parent").value == ""){
-     btnadd.disabled = true;
+     btnaddp.disabled = true;
      parent_done = false;
   }
   else{
-    btnadd.disabled = false;
+    btnaddp.disabled = false;
     parent_done = true;
   }
   verify_p();
 }
 function verify_p(){
     if (project_done && parent_done){
-      btnadd.disabled = false;
+      btnaddp.disabled = false;
     }
     else{
-      btnadd.disabled = true;
+      btnaddp.disabled = true;
     }
 }
-function sendRequest(url, projet,parent) {
+function sendRequest_project(url, projetp,parent) {
+  console.log(projetp);
   var http = new XMLHttpRequest();
   http.open("POST", url, true);
   http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -72,7 +74,7 @@ function sendRequest(url, projet,parent) {
       showNotif(this.responseText);
     }
   };
-  http.send("projet=" + projet + "&parent="+parent);
+  http.send("projet=" + projetp + "&parent="+parent);
 }
 function showNotif(text) {
   const notif = document.querySelector('.notification');

@@ -34,6 +34,9 @@ const queryString = window.location.search;
 				}
 				
 			},1000)
+function validate_all(){
+
+}
 
 function sendRequest_true(url,id) {
     var http = new XMLHttpRequest();
@@ -56,4 +59,23 @@ function sendRequest_true(url,id) {
       }
     };
     http.send("id="+id+"&m_code="+mcode+"&task="+task+"&projetr="+projetr+"&message="+message);
+  }
+  function valide_all(){
+    sendRequest_valid_all("/valideall",filter.value);
+  }
+  function sendRequest_valid_all(url,options){
+    var http = new XMLHttpRequest();
+    http.open("POST", url, true);
+    http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    http.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+          if (this.responseText == "part"){
+            window.location = "/validation?search="+filter.value;
+          }
+          else{
+            window.location = "/employees";
+          } 
+      }
+    };
+    http.send("option="+options);
   }

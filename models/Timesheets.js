@@ -5,6 +5,7 @@ const Timesheet = mongoose.Schema({
     num_agent:String,
     projects: String,
     parent:String,
+    amount:Number,
     date:String,
     time_start: String,
     time_end:String,

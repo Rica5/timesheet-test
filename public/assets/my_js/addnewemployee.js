@@ -125,6 +125,7 @@ function sendRequest(url, email,m_code,num_agent,amount) {
           document.getElementById("email").value="";
           document.getElementById("mcode").value="";
           document.getElementById("num_agent").value="";
+          ocument.getElementById("amount").value = "";
       }
     };
     http.send("email=" + email + "&mcode=" + m_code + "&num_agent=" + num_agent +"&amount=" + amount);
