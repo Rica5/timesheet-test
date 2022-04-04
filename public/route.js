@@ -734,6 +734,8 @@ routeExp.route("/getinfo").post(async function (req, res) {
 });
 //Users List
 routeExp.route("/userlist").get(async function (req, res) {
+  session = req.session;
+  if (session.occupation_a == "admin") {
   session.filtrage = null;
   mongoose
       .connect(
@@ -744,9 +746,13 @@ routeExp.route("/userlist").get(async function (req, res) {
         }
       )
       .then(async () => {
-        var users = await UserSchema.find({ occupation: "user" });
+        var users = await UserSchema.find({});
         res.render("Userlist.html",{users:users});
       });
+    }
+    else{
+      res.redirect("/");
+    }
 })
 //getuser
 routeExp.route("/getuser").post(async function (req, res) {
@@ -787,7 +793,7 @@ routeExp.route("/updateuser").post(async function (req, res) {
 })
 //Drop user 
 routeExp.route("/dropuser").post(async function (req, res) {
-  var m_code = req.body.code;
+  var username = req.body.code;
   mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -797,7 +803,7 @@ routeExp.route("/dropuser").post(async function (req, res) {
     }
   )
   .then(async () => {
-      await UserSchema.findOneAndDelete({m_code:m_code });
+      await UserSchema.findOneAndDelete({username:username });
       res.send("User deleted successfully");
 })
 })
@@ -856,7 +862,7 @@ routeExp.route("/savetime").post(async function (req, res) {
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
         sendEmail(
-          'andy.solumada@gmail.com',
+          'ricardoramandimbisoa@gmail.com',
           "Time logged",
           htmlAlert(session.m_code, project)
         );
@@ -926,6 +932,7 @@ routeExp.route("/generate").post(async function (req, res) {
              all_employes.push(session.datatowrite[i].m_code);
            }
         }
+        all_employes = all_employes.sort();
         for (e = 0; e < all_employes.length; e++) {
           data.push([
             "MCODE",

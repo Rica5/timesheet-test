@@ -179,27 +179,48 @@
 										<th>M-CODE</th>
 										<th>NUMBER OF AGENT</th>
 										<th>AMOUNT</th>
+										<th>STATUS</th>
                                         <th>ACTIONS</th>
 									</tr>
 								</thead>
 								<tbody id ="alldata">
 									<% users.forEach(function(user) { %>
+										<% if (user.occupation == "user") { %>
 											<tr id="<%= user._id %>">
-                                                <td><%= user.username %></td>
-												<td><%= user.m_code %></td>
-												<td><%= user.num_agent %></td>
-												<td><%= user.amount %></td>
-												<td style="width: 60px;">
+                                                <td align="center"><%= user.username %></td>
+												<td align="center"><%= user.m_code %></td>
+												<td align="center"><%= user.num_agent %></td>
+												<td align="center"><%= user.amount %></td>
+												<td align="center"><%= user.occupation %></td>
+												<td align="center" style="width: 60px;">
 													<div class="row" style="width: 100px;">
-													<div class="col-sm-5 text-left">
+													<div class="col-sm-6 text-left">
 														<a class="modal-with-form" href="#modalForm"><button type="button" onclick="getdata('/getuser','<%= user._id %>')" class="btn btn-warning btn-circle btn-sm"><i class="fa fa-pencil"></i></button></a>
 													</div>
-													<div class="col-sm-5 text-right">
-														<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.m_code %>")' class="btn btn-danger btn-circle btn-sm text-right"><i class="fa fa-times-circle"></i></button></a>
+													<div class="col-sm-6 text-right">
+														<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.username %>")' class="btn btn-danger btn-circle btn-sm text-right"><i class="fa fa-times-circle"></i></button></a>
 													</div>
 												</div>	
 												</td>
-											</tr>		   
+											</tr>
+											<% } else { %>
+												<tr id="<%= user._id %>">
+													<td align="center"><%= user.username %></td>
+													<td align="center">N/A</td>
+													<td align="center">N/A</td>
+													<td align="center">N/A</td>
+													<td align="center"><%= user.occupation %></td>
+													<td align="center" style="width: 60px;">
+														<div class="" class="row" style="width: 100px;">
+														<div class="col-sm-12">
+															<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.username %>")' class="btn btn-danger btn-circle btn-sm text-center"><i class="fa fa-times-circle"></i></button></a>
+														</div>
+													</div>	
+													</td>
+												</tr>
+										<% } %>
+										
+											   
 									  <% }); %>
 								</tbody>
 							</table>

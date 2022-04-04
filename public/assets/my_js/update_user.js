@@ -64,7 +64,7 @@ function getdata(url,id) {
   }
 
   function delete_user(user){
-        textwarn.innerHTML = "Are you sure to delete user "+user;
+        textwarn.innerHTML = "Are you sure to delete user <b>"+user+"</b>";
         del = user;
   }
   function confirm_del(){
