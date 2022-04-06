@@ -64,7 +64,7 @@
 							</figure>
 							<div class="profile-info" data-lock-name="John Doe" data-lock-email="johndoe@JSOFT.com">
 								<span class="name">Optimum timesheets</span>
-								<span class="role">administrator</span>
+								<span class="role"><%= admin %></span>
 							</div>
 			
 							<i class="fa custom-caret"></i>
@@ -165,10 +165,22 @@
 							<h2 class="panel-title text-center">Timesheets of employees</h2>
 							<hr>
 							<div class="row">
-								<div class="col-sm-6">	
-								<a href="/newemployee"><button class="btn btn-primary btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<button id="pnew" onclick="newproject_listen()" class="btn btn-success btn-sm "><i class="fa fa-plus"></i> NEW PROJECTS</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-								<a class="modal-with-form" href="#modalForm"><button class="btn btn-primary btn-sm "><i class="fa fa-plus"></i> NEW ADMINISTRATOR</button></a>
+								<div class="col-sm-6">
+								<div class="row">
+									<div class="col-md-3" style="margin-bottom: 10px;">
+										<a href="/newemployee"><button class="btn btn-primary btn-sm "><i class="fa fa-plus"></i>   NEW EMPLOYE</button></a>
+										
+									</div>
+									<div class="col-md-3" style="margin-bottom: 10px;">
+										<button id="pnew" onclick="newproject_listen()" class="btn btn-success btn-sm "><i class="fa fa-plus"></i> NEW PROJECTS</button>
+									</div>
+									<div class="col-md-3">
+										<a class="modal-with-form" href="#modalForm"><button class="btn btn-primary btn-sm pull-left "><i class="fa fa-plus"></i> NEW ADMINISTRATOR</button></a>
+									</div>
+								</div>
+									
+								
+								
 							</div>
 							
 							<div id="notif" class="col-sm-6 notification">

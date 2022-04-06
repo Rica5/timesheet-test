@@ -4,10 +4,11 @@ const mongoose = require("mongoose");
 const UserSchema = require("../models/User");
 const TimesheetsSchema = require("../models/Timesheets");
 const projectSchema = require("../models/Project");
+const archiveSchema = require("../models/archive");
 const nodemailer = require("nodemailer");
 const moment = require("moment");
 const ExcelFile = require("sheetjs-style");
-var num_file = 0;
+var num_file = 1;
 const fs = require('fs');
  
 //Variable globale
@@ -81,6 +82,7 @@ routeExp.route("/login").post(async function (req, res) {
           res.redirect("/timedefine");
         } else {
            session.occupation_a = logger.occupation;
+           session.admin = logger.username;
            session.request = {
             validation: true,
             occupation: "user",
@@ -176,7 +178,7 @@ routeExp.route("/management").get(async function (req, res) {
   session = req.session;
   session.filtrage = null;
   if (session.occupation_a == "admin") {
-    res.render("ManagementPage.html");
+    res.render("ManagementPage.html",{admin:session.admin});
   } else {
     res.redirect("/");
   }
@@ -206,6 +208,7 @@ routeExp.route("/employees").get(async function (req, res) {
         res.render("Employees.html", {
           timesheets: session.datatowrite,
           available_project: projects,
+          admin:session.admin
         });
       });
   } else {
@@ -325,6 +328,8 @@ routeExp.route("/addemp").post(async function (req, res) {
   var mcode = req.body.mcode;
   var num_agent = req.body.num_agent;
   var amount = req.body.amount;
+  var first = req.body.first_name;
+  var last = req.body.last_name;
   mongoose
     .connect(
       "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -348,13 +353,21 @@ routeExp.route("/addemp").post(async function (req, res) {
         var passdefault = randomPassword();
         var new_emp = {
           username: email,
+          first_name:first,
+          last_name:last,
           password: passdefault,
           m_code: mcode,
           num_agent: num_agent,
           occupation: "user",
           amount:amount,
         };
+        var new_arch = {
+          first_name:first,
+          last_name:last,
+          m_code: mcode,
+        }
         await UserSchema(new_emp).save();
+        await archiveSchema(new_arch).save();
         sendEmail(
           email,
           "Authentification Timesheets",
@@ -580,7 +593,7 @@ routeExp.route("/about").get(async function (req, res) {
       )
       .then(async () => {
         var projects = await projectSchema.find({});
-        res.render("Projects.html", { available_project: projects });
+        res.render("Projects.html", { available_project: projects,admin:session.admin });
       });
   } else {
     res.redirect("/");
@@ -608,7 +621,7 @@ routeExp.route("/getinfo").post(async function (req, res) {
         projects: project,
         validation: true,
       }).sort(
-        { "_id": -1 }
+        { "date": 1 }
       );
       if (alltimes.length != 0){
         var amount = 0;
@@ -622,7 +635,7 @@ routeExp.route("/getinfo").post(async function (req, res) {
           date: datetosearch,
           validation: true,
         }).sort(
-          { "_id": -1 }
+          { "date": 1 }
         );
         for (i = 0; i < one.length; i++) {
           calcul_timediff(one[i].time_start, one[i].time_end);
@@ -655,7 +668,9 @@ routeExp.route("/getinfo").post(async function (req, res) {
           var alltimes = await TimesheetsSchema.find({
             projects: project_name,
             validation: true,
-          });
+          }).sort(
+            { "date": 1 }
+          );
           if (alltimes.length != 0){
             var tab = [0,0,0,0,0,0];
             tab[0]+=timepassedh;tab[1]+=timepassedmin;tab[2]+=amounts;tab[3]+=timepassed1h;tab[4]+=timepassed1min;tab[5]+=amount1;
@@ -669,7 +684,9 @@ routeExp.route("/getinfo").post(async function (req, res) {
               projects:project_name,
               date: datetosearch,
               validation: true,
-            });
+            }).sort(
+              { "date": 1 }
+            );
             for (i = 0; i < one.length; i++) {
               calcul_timediff(one[i].time_start, one[i].time_end);
               amount1 += one[i].amount * timediff(one[i].time_start, one[i].time_end);
@@ -747,7 +764,7 @@ routeExp.route("/userlist").get(async function (req, res) {
       )
       .then(async () => {
         var users = await UserSchema.find({});
-        res.render("Userlist.html",{users:users});
+        res.render("Userlist.html",{users:users,admin:session.admin});
       });
     }
     else{
@@ -767,7 +784,7 @@ routeExp.route("/getuser").post(async function (req, res) {
   )
   .then(async () => {
     var user = await UserSchema.findOne({_id:id });
-    res.send(user.m_code + ","+user.num_agent +","+user.amount);
+    res.send(user.first_name +","+user.last_name+","+user.m_code + ","+user.num_agent +","+user.amount);
   });
 })
 //Update User
@@ -776,6 +793,8 @@ routeExp.route("/updateuser").post(async function (req, res) {
   var m_code = req.body.code;
   var num_agent = req.body.num;
   var amount = req.body.am;
+  var first = req.body.first;
+  var last = req.body.last;
   mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -787,13 +806,15 @@ routeExp.route("/updateuser").post(async function (req, res) {
   .then(async () => {
     var user = await UserSchema.findOne({_id:id });
       await TimesheetsSchema.updateMany({m_code:user.m_code},{m_code:m_code,num_agent:num_agent});
-      await UserSchema.findOneAndUpdate({_id:id },{m_code:m_code,num_agent:num_agent,amount:amount});
+      await UserSchema.findOneAndUpdate({_id:id },{m_code:m_code,num_agent:num_agent,amount:amount,first_name:first,last_name:last});
+      await archiveSchema.findOneAndUpdate({m_code:m_code},{m_code:m_code,first_name:first,last_name:last});
       res.send("User updated successfully");
 })
 })
 //Drop user 
 routeExp.route("/dropuser").post(async function (req, res) {
-  var username = req.body.code;
+  var names = req.body.fname;
+  names = names.split(" ");
   mongoose
   .connect(
     "mongodb+srv://Rica:ryane_jarello5@cluster0.z3s3n.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
@@ -803,7 +824,7 @@ routeExp.route("/dropuser").post(async function (req, res) {
     }
   )
   .then(async () => {
-      await UserSchema.findOneAndDelete({username:username });
+      await UserSchema.findOneAndDelete({first_name:names[0],last_name:names[1]});
       res.send("User deleted successfully");
 })
 })
@@ -862,7 +883,7 @@ routeExp.route("/savetime").post(async function (req, res) {
       new_time.parent = parent.parent;
       await TimesheetsSchema(new_time).save();
         sendEmail(
-          'ricardoramandimbisoa@gmail.com',
+          'andy.solumada@gmail.com',
           "Time logged",
           htmlAlert(session.m_code, project)
         );
@@ -894,26 +915,45 @@ routeExp.route("/generate").post(async function (req, res) {
     )
     .then(async () => {
       if (session.request.m_code) {
+        var name_user = await UserSchema.findOne({m_code:all_employes});
         data.push([
-          "MCODE",
-          "Number of Agent",
+          name_user.last_name+" "+name_user.first_name + " SHEET",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ]);
+        data.push([
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+        ]);
+        data.push([
+          "M-CODE",
+          "Number Of Agent",
           "Project Name",
           "Date",
-          "Task ",
+          "Task",
           "Start Time",
           "End Time",
         ]);
         generate_excel(session.datatowrite);
-        if (newsheet.SheetNames.includes(session.request.m_code)) {
+        if (newsheet.SheetNames.includes(session.request.m_code.toUpperCase())){
         } else {
-          newsheet.SheetNames.push(session.request.m_code);
+          newsheet.SheetNames.push(session.request.m_code.toUpperCase());
         }
-        newsheet.Sheets[session.request.m_code] = ws;
+        newsheet.Sheets[session.request.m_code.toUpperCase()] = ws;
         hours = 0;
         minutes = 0;
         data = [];
         if (newsheet.SheetNames.length != 0) {
-          session.filename = "N°"+num_file+ " " + session.request.m_code + ".xlsx";
+          session.filename = "N°"+num_file+ " " + session.request.m_code.toUpperCase() + ".xlsx";
           num_file++;
           ExcelFile.writeFile(newsheet, session.filename);
         }
@@ -930,18 +970,39 @@ routeExp.route("/generate").post(async function (req, res) {
            }
            else{
              all_employes.push(session.datatowrite[i].m_code);
-           }
         }
         all_employes = all_employes.sort();
+        
+        }
         for (e = 0; e < all_employes.length; e++) {
+          
+          var name_user = await archiveSchema.findOne({m_code:all_employes[e]});
           data.push([
-            "MCODE",
-            "NUMBER OF AGENT",
-            "PROJECT NAME",
-            "DATE",
-            "TASK",
-            "START TIME",
-            "END TIME",
+            "SHEET OF => "+name_user.last_name+" "+name_user.first_name,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+          ]);
+          data.push([
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+          ]);
+          data.push([
+            "M-CODE",
+            "Number Of Agent",
+            "Project Name",
+            "Date",
+            "Task",
+            "Start Time",
+            "End Time",
           ]);
           session.request.m_code = all_employes[e];
           var datanew = [];
@@ -954,7 +1015,9 @@ routeExp.route("/generate").post(async function (req, res) {
             generate_excel(datanew);
             datanew = [];
           } else {
-            session.datatowrite = await TimesheetsSchema.find(session.request);
+            session.datatowrite = await TimesheetsSchema.find(session.request).sort(
+              { "date": 1 }
+            );
             generate_excel(session.datatowrite);
           }
 
@@ -986,21 +1049,34 @@ routeExp.route("/generate").post(async function (req, res) {
           }
           newsheet.SheetNames.push("TOTAL");
           ws = ExcelFile.utils.aoa_to_sheet(data);
-          style();
+          ws["!cols"] = [
+            {wpx: 200 },
+            {wpx: 150},
+            {wpx: 150},
+          ];
+          style1();
           newsheet.Sheets["TOTAL"] = ws;
           data= [];
         }
        
-        delete session.request.m_code;
-        delete session.request.date;
-        delete session.request.projects;
-        delete session.request.date;
-        delete session.request.parent;
         if (newsheet.SheetNames.length != 0) {
-          session.filename = "N°"+num_file+" Timesheets.xlsx";
-          num_file++;
-          ExcelFile.writeFile(newsheet, session.filename);
+          if (session.request.projects){
+            session.filename ="N°"+num_file+" "+session.request.projects+".xlsx";
+            num_file++;
+            ExcelFile.writeFile(newsheet, session.filename);
+          }
+          else{
+            session.filename = "N°"+num_file+" Timesheets.xlsx";
+            num_file++;
+            ExcelFile.writeFile(newsheet, session.filename);
+          }
+          delete session.request.m_code;
+          delete session.request.date;
+          delete session.request.projects;
+          delete session.request.date;
+          delete session.request.parent;
         }
+        
       }
 
       res.send("Done");
@@ -1038,10 +1114,9 @@ routeExp.route("/exit_u").get(function (req, res) {
   session.num_agent;
   res.redirect("/");
 });
-
 //Fonction a employer
 //Fonction generate excel
-function generate_excel(datatowrites,rate) {
+function generate_excel(datatowrites) {
   var cumul = 0;
   for (i = 0; i < datatowrites.length; i++) {
     var ligne = [
@@ -1069,43 +1144,140 @@ function generate_excel(datatowrites,rate) {
     cumul.toFixed(2) + " €",
   ]);
   ws = ExcelFile.utils.aoa_to_sheet(data);
+  ws["!cols"] = [
+    {wpx: 80 },
+    {wpx: 130},
+    {wpx: 200},
+    {wpx: 80},
+    {wpx: 500},
+    {wpx: 100 },
+    {wpx: 100 }
+  ];
+  const merge = [
+    { s: { r: 0, c: 0 }, e: { r: 1, c: 6}},
+    { s: { r: 3, c: 0 }, e: { r: datatowrites.length + 2, c:0 }},
+    { s: { r: 3, c: 1 }, e: { r: datatowrites.length + 2, c:1 }},
+  ];
+  ws["!merges"] = merge;
   style();
+}
+function style1(){
+  var cellule = ["A", "B", "C"];
+  for (c = 0; c < cellule.length; c++) {
+    for (i = 1; i <= data.length; i++) {
+      if (ws[cellule[c] + "" + i]) {
+          if (i == 1) {
+          ws[cellule[c] + "" + i].s = {
+            fill:{
+              patternType : "solid",
+              fgColor : { rgb: "619FCB" },
+              bgColor: { rgb: "619FCB" },
+            },
+            font: {
+              name: "Segoe UI Black",
+              bold: true,
+              color: { rgb: "F5F5F5" }
+            },
+            border: {
+              left: { style: "hair" },
+              right: { style: "hair" },
+              top: {
+                style: "hair",
+                bottom: { style: "hair" },
+              },
+            },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        } 
+        else {
+          ws[cellule[c] + "" + i].s = {
+            font: {
+              name: "Verdana",
+              color: {rgb:"777777"}
+            },
+            border: {
+              left: { style: "hair" },
+              right: { style: "hair" },
+              top: {
+                style: "hair",
+                bottom: { style: "hair" },
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal:"center"
+          },
+          };
+        }
+      }
+    }
+  }
 }
 function style(){
   var cellule = ["A", "B", "C", "D", "E", "F", "G"];
   for (c = 0; c < cellule.length; c++) {
     for (i = 1; i <= data.length; i++) {
       if (ws[cellule[c] + "" + i]) {
-        if (i == 1) {
+        if (i == 1 || i == 2) {
           ws[cellule[c] + "" + i].s = {
             font: {
-              name: "Times New Roman",
+              name: "Segoe UI Black",
               bold: true,
+              color: { rgb: "619FCB" },
             },
-            border: {
-              left: { style: "thin", color: { rgb: "FF000000" } },
-              right: { style: "thin", color: { rgb: "FF000000" } },
-              top: {
-                style: "thin",
-                color: { rgb: "FF000000" },
-                bottom: { style: "thin", color: { rgb: "FF000000" } },
-              },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
             },
           };
-        } else {
+        }
+        else if (i == 3) {
           ws[cellule[c] + "" + i].s = {
+            fill:{
+              patternType : "solid",
+              fgColor : { rgb: "619FCB" },
+              bgColor: { rgb: "619FCB" },
+            },
             font: {
-              name: "Times New Roman",
+              name: "Segoe UI Black",
+              bold: true,
+              color: { rgb: "F5F5F5" }
             },
             border: {
-              left: { style: "thin", color: { rgb: "FF000000" } },
-              right: { style: "thin", color: { rgb: "FF000000" } },
+              left: { style: "hair" },
+              right: { style: "hair" },
               top: {
-                style: "thin",
-                color: { rgb: "FF000000" },
-                bottom: { style: "medium", color: { rgb: "FF000000" } },
+                style: "hair",
+                bottom: { style: "hair" },
               },
             },
+            alignment:{
+                vertical : "center",
+                horizontal:"center"
+            },
+          };
+        } 
+        else {
+          ws[cellule[c] + "" + i].s = {
+            font: {
+              name: "Verdana",
+              color: {rgb:"777777"}
+            },
+            border: {
+              left: { style: "hair" },
+              right: { style: "hair" },
+              top: {
+                style: "hair",
+                bottom: { style: "hair" },
+              },
+            },
+            alignment:{
+              vertical : "center",
+              horizontal:"center"
+          },
           };
         }
       }
@@ -1136,6 +1308,8 @@ function randomPassword() {
   }
   return code;
 }
+
+
 //Function html render
 function htmlRender(username, password) {
   var html =

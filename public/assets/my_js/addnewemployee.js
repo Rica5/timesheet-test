@@ -5,15 +5,49 @@ var success = document.getElementById("success");
 var btns = document.getElementById("btns");
 btns.disabled = true;
 //Verify
+var first_done = false;
+var last_done = false;
 var mail_done = false;
 var code_done = false;
 var number_done =false;
-var amount_done = false
+var amount_done = false;
 //error 
+var ef = document.getElementById("ef");
+var el = document.getElementById("el");
 var em = document.getElementById("em");
 var ec = document.getElementById("ec");
 var en = document.getElementById("en");
 var am = document.getElementById("am");
+//verify first
+function verify_first(){
+  var first = document.getElementById("first");
+  if (first.value != ""){
+    ef.style.display = "none";
+    first.removeAttribute("style");
+    first_done = true;
+  }
+  else{
+    ef.style.display = "block";
+    first.setAttribute("style","border-color:red;");
+    first_done = false;
+  }
+  verify_all();
+}
+//verify last
+function verify_last(){
+  var last = document.getElementById("last");
+  if (last.value != ""){
+    el.style.display = "none";
+    last.removeAttribute("style");
+    last_done = true;
+  }
+  else{
+    el.style.display = "block";
+    last.setAttribute("style","border-color:red;");
+    last_done = false;
+  }
+  verify_all();
+}
 //Verify mail
 function verify_mail(){
   var email = document.getElementById("email");
@@ -29,6 +63,7 @@ function verify_mail(){
   }
   verify_all();
 }
+
 function verify_amount(){
   var amount = document.getElementById("amount");
   if (amount.value ==""){
@@ -74,7 +109,7 @@ function verify_number(){
   verify_all();
 }
 function verify_all(){
-  if (mail_done && code_done && number_done && amount_done){
+  if (mail_done && code_done && number_done && amount_done && first_done && last_done){
       btns.disabled = false;
   }
   else{
@@ -98,9 +133,11 @@ function add_new_employee(){
     var m_code = document.getElementById("mcode").value;
     var num_agent = document.getElementById("num_agent").value;
     var amount = document.getElementById("amount").value;
-    sendRequest('/addemp',email,m_code,num_agent,amount);
+    var first = document.getElementById("first").value;
+    var last = document.getElementById("last").value;
+    sendRequest('/addemp',email,m_code,num_agent,amount,first,last);
 }
-function sendRequest(url, email,m_code,num_agent,amount) {
+function sendRequest(url, email,m_code,num_agent,amount,firsts,lasts) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -125,8 +162,10 @@ function sendRequest(url, email,m_code,num_agent,amount) {
           document.getElementById("email").value="";
           document.getElementById("mcode").value="";
           document.getElementById("num_agent").value="";
-          ocument.getElementById("amount").value = "";
+          document.getElementById("amount").value = "";
+          document.getElementById("first").value = "";
+          document.getElementById("last").value = "";
       }
     };
-    http.send("email=" + email + "&mcode=" + m_code + "&num_agent=" + num_agent +"&amount=" + amount);
+    http.send("email=" + email + "&mcode=" + m_code + "&num_agent=" + num_agent +"&amount=" + amount+"&first_name="+firsts+"&last_name="+lasts);
   }

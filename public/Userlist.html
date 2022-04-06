@@ -64,7 +64,7 @@
 							</figure>
 							<div class="profile-info" data-lock-name="John Doe" data-lock-email="johndoe@JSOFT.com">
 								<span class="name">Optimum timesheets</span>
-								<span class="role">administrator</span>
+								<span class="role"><%= admin %></span>
 							</div>
 			
 							<i class="fa custom-caret"></i>
@@ -176,6 +176,7 @@
 								<thead style="background-color: #619FCB;color:white">
 									<tr>
                                         <th>USERNAME</th>
+										<th>NAME</th>
 										<th>M-CODE</th>
 										<th>NUMBER OF AGENT</th>
 										<th>AMOUNT</th>
@@ -188,6 +189,7 @@
 										<% if (user.occupation == "user") { %>
 											<tr id="<%= user._id %>">
                                                 <td align="center"><%= user.username %></td>
+												<td align="center"><%= user.first_name %> <%= user.last_name %></td>
 												<td align="center"><%= user.m_code %></td>
 												<td align="center"><%= user.num_agent %></td>
 												<td align="center"><%= user.amount %></td>
@@ -198,14 +200,15 @@
 														<a class="modal-with-form" href="#modalForm"><button type="button" onclick="getdata('/getuser','<%= user._id %>')" class="btn btn-warning btn-circle btn-sm"><i class="fa fa-pencil"></i></button></a>
 													</div>
 													<div class="col-sm-6 text-right">
-														<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.username %>")' class="btn btn-danger btn-circle btn-sm text-right"><i class="fa fa-times-circle"></i></button></a>
+														<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.first_name %> <%= user.last_name %>")' class="btn btn-danger btn-circle btn-sm text-right"><i class="fa fa-times-circle"></i></button></a>
 													</div>
 												</div>	
 												</td>
 											</tr>
 											<% } else { %>
 												<tr id="<%= user._id %>">
-													<td align="center"><%= user.username %></td>
+													<td align="center"><b style="opacity: 0%;">a</b><%= user.username %></td>
+													<td align="center"><%= user.first_name %> <%= user.last_name %></td>
 													<td align="center">N/A</td>
 													<td align="center">N/A</td>
 													<td align="center">N/A</td>
@@ -213,7 +216,7 @@
 													<td align="center" style="width: 60px;">
 														<div class="" class="row" style="width: 100px;">
 														<div class="col-sm-12">
-															<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.username %>")' class="btn btn-danger btn-circle btn-sm text-center"><i class="fa fa-times-circle"></i></button></a>
+															<a  class="mb-xs mt-xs mr-xs modal-basic"  href="#modalDanger"><button type="button" onclick='delete_user("<%= user.first_name %> <%= user.last_name %>")' class="btn btn-danger btn-circle btn-sm text-center"><i class="fa fa-times-circle"></i></button></a>
 														</div>
 													</div>	
 													</td>
@@ -234,6 +237,18 @@
 							<h2 class="panel-title">Update User</h2>
 						</header>
 						<div class="panel-body">
+							<div class="form-group mt-lg">
+								<label class="col-sm-3 control-label">FIRST NAME</label>
+								<div class="col-sm-9">
+									<input type="text" id="first" name="first" onkeyup="verify()" class="form-control" placeholder="Enter first name here..." required/>
+								</div>
+							</div>
+							<div class="form-group mt-lg">
+								<label class="col-sm-3 control-label">LAST NAME</label>
+								<div class="col-sm-9">
+									<input type="text" id="last" name="last" onkeyup="verify()" class="form-control" placeholder="Enter last name here..." required/>
+								</div>
+							</div>
 								<div class="form-group mt-lg">
 									<label class="col-sm-3 control-label">MCODE</label>
 									<div class="col-sm-9">

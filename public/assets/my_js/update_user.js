@@ -1,3 +1,5 @@
+var first = document.getElementById("first");
+var last = document.getElementById("last");
 var m_code = document.getElementById('m_code');
 var num_agent = document.getElementById("num_agent");
 var amount = document.getElementById("amount");
@@ -13,7 +15,7 @@ function getdata(url,id) {
     http.onreadystatechange = function () {
       if (this.readyState == 4 && this.status == 200) {
         var data = this.responseText.split(",");
-        m_code.value = data[0];num_agent.value = data[1];amount.value = parseFloat(data[2]);
+        first.value=data[0];last.value=data[1];m_code.value = data[2];num_agent.value = data[3];amount.value = parseFloat(data[4]);
         btnu.disabled = false;
         ids = id;
       }
@@ -21,9 +23,9 @@ function getdata(url,id) {
     http.send("id="+id);
   }
   function modify(){
-      update_user("/updateuser",ids,m_code.value,num_agent.value,amount.value);
+      update_user("/updateuser",ids,m_code.value,num_agent.value,amount.value,first.value,last.value);
   }
-  function update_user(url,id,code,num,am) {
+  function update_user(url,id,code,num,am,f,l) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -42,7 +44,7 @@ function getdata(url,id) {
          }
       }
     };
-    http.send("id="+id+"&code="+code+"&num="+num+"&am="+am);
+    http.send("id="+id+"&code="+code+"&num="+num+"&am="+am+"&first="+f+"&last="+l);
   }
   function showNotif(text) {
     const notif = document.querySelector('.notification');
@@ -55,7 +57,7 @@ function getdata(url,id) {
   }
   
   function verify(){
-      if (m_code.value != "" && num_agent.value != "" && amount.value != ""){
+      if (m_code.value != "" && num_agent.value != "" && amount.value != "" && first.value !="" && last.value != ""){
         btnu.disabled = false;
       } 
       else{
@@ -70,7 +72,7 @@ function getdata(url,id) {
   function confirm_del(){
     drop_user("/dropuser",del);
   }
-  function drop_user(url,code) {
+  function drop_user(url,fname) {
     var http = new XMLHttpRequest();
     http.open("POST", url, true);
     http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -84,5 +86,5 @@ function getdata(url,id) {
          }
       }
     };
-    http.send("code="+code);
+    http.send("fname="+fname);
   }

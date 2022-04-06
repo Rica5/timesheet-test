@@ -50,6 +50,16 @@
 						<h2 class="title text-uppercase text-bold m-none"><i class="fa fa-laptop mr-xs"></i>NEW EMPLOYEE</h2>
 					</div>
 					<div class="panel-body">
+						<div class="form-group mb-lg">
+							<label>First Name</label>
+							<input type="text" name="first" id="first" onkeyup="verify_first()"  class="form-control input-lg" required >
+							<span id="ef" style="color:red;font-size: smaller;display:none;">First Name is required</span>
+						</div>
+						<div class="form-group mb-lg">
+							<label>Last Name</label>
+							<input type="text" name="last" id="last" onkeyup="verify_last()"  class="form-control input-lg" required >
+							<span id="el" style="color:red;font-size: smaller;display:none;">Last name is required</span>
+						</div>
 							<div class="form-group mb-lg">
 								<label>E-mail</label>
 								<input type="email" name="email" id="email" onkeyup="verify_mail()"  class="form-control input-lg" required >
