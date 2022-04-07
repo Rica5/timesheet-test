@@ -513,7 +513,7 @@ routeExp.route("/denied").post(async function (req, res) {
   var m_code = req.body.m_code;
   var message = req.body.message;
   var task = req.body.task;
-   console.log("task");
+   console.log(idd + " plus " + task);
   var project = req.body.projetr;
   mongoose
     .connect(
