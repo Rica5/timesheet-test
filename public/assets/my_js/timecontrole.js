@@ -94,7 +94,7 @@ function verify_all(){
 function savetime(){
 	if(done){
 		done = false;
-    sendRequest('/savetime',project.value,date.value,timestart.value,timeend.value,task.value);
+    sendRequest('/savetime',project.value,date.value,timestart.value,timeend.value,task.value.replace( /[\r\n]+/gm, " " ));
 	}
 }
 function sendRequest(url,projects,dates,timestarts,timeends,tasks) {
