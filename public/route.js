@@ -508,12 +508,10 @@ routeExp.route("/validate").post(async function (req, res) {
 routeExp.route("/denied").post(async function (req, res) {
   session = req.session;
   if (session.occupation_a == "admin") {
-  var idd = req.body.id;
-  idd = idd.replace(/\s+/g, '');
+  var id = req.body.id;
   var m_code = req.body.m_code;
   var message = req.body.message;
   var task = req.body.task;
-   console.log(idd + " plus " + task);
   var project = req.body.projetr;
   mongoose
     .connect(
@@ -525,7 +523,7 @@ routeExp.route("/denied").post(async function (req, res) {
     )
     .then(async () => {
       var user = await UserSchema.findOne({ m_code: m_code });
-      await TimesheetsSchema.findOneAndDelete({ _id: idd });
+      await TimesheetsSchema.findOneAndDelete({ _id: id });
       var text =
         "<p>Hello,</p>" +
         "<p>Your task <b>" +
