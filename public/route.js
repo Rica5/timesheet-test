@@ -288,8 +288,14 @@ routeExp.route("/filter").post(async function (req, res) {
             datatosend[0].push(datatosend[i][d]);
           }
         }
-        session.datatowrite = datatosend[0];
-        res.send(datatosend[0]);
+       if (datatosend.length != 0){
+          session.datatowrite = datatosend[0];
+          res.send(datatosend[0]);
+        }
+        else{
+          session.datatowrite = datatosend;
+          res.send(datatosend);
+        }
       } else if (datecount.length == 1) {
         if (datecount[0] == 1) {
           session.request.date = datestart;
