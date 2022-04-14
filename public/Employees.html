@@ -230,15 +230,32 @@
 							<div class="row ">
 								<div class="col-md-3 pull-right">
 									<label>End Date</label>
-								<div class="input-group input-group-icon">
-									<input name="enddate" id="enddate"  type="date" class="form-control" required/>
-								</div>
+									<div class="row">
+										<div class="col-md-10">
+											<div class="input-group input-group-icon">
+												<input name="enddate" id="enddate"  type="date" class="form-control" required/>
+											</div>
+										</div>
+										<div class="col-md-1 pull-right">
+											<button type="button" class="btn btn-primary btn-circle btn-sm pull-right" onclick='sde()'><i class="fa fa-refresh"></i></button>
+										</div>
+									</div>
+									
+									
 								</div>
 								<div class="col-md-3 pull-right">
 									<label>Start Date</label>
-								<div class="input-group input-group-icon">
-									<input name="startdate" id ="startdate" type="date" class="form-control" required/>
-								</div>
+									<div class="row">
+										<div class="col-md-10">
+											<div class="input-group input-group-icon">
+												<input name="startdate" id ="startdate" type="date" class="form-control" required/>
+											</div>
+										</div>
+										<div class="col-md-1 pull-right">
+											<button type="button" class="btn btn-primary btn-circle btn-sm pull-right" onclick='sdr()'><i class="fa fa-refresh"></i></button>
+										</div>
+									</div>
+								
 								</div>
 								<div class="col-md-3 pull-right">
 									<div class="input-group input-group-icon">
@@ -428,6 +445,12 @@
 					
 				}
 				
+			}
+			function sdr(){
+				document.getElementById("startdate").value = "";
+			}
+			function sde(){
+				document.getElementById("enddate").value = "";
 			}
 		</script>
 
