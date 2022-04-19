@@ -921,7 +921,7 @@ routeExp.route("/generate").post(async function (req, res) {
     )
     .then(async () => {
       if (session.request.m_code) {
-        var name_user = await UserSchema.findOne({m_code:all_employes});
+        var name_user = await UserSchema.findOne({m_code:session.request.m_code});
         data.push([
           name_user.last_name+" "+name_user.first_name + " SHEET",
           "",
